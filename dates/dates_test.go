@@ -21,3 +21,20 @@ func TestFindDateReturnsErrorWhenDateNotFound(t *testing.T) {
 		t.Errorf("Should have non-nil error")
 	}
 }
+
+func TestConvertDateStringToTime(t *testing.T) {
+	dateStr := "20/12/2019"
+	_, err := ConvertToTime(dateStr)
+	if err != nil {
+		t.Errorf("Error parsing date string: %q", err)
+	}
+}
+
+func TestExtractShortDate(t *testing.T) {
+	dateStr := "20/12/2019"
+	datetime, _ := ConvertToTime(dateStr)
+	shortDateStr := ExtractShortDate(datetime)
+	if dateStr != shortDateStr {
+		t.Errorf("Extract short date failed, got %q, want %q", shortDateStr, dateStr)
+	}
+}
