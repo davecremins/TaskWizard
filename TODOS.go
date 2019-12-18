@@ -7,8 +7,7 @@ import (
 	"strings"
 )
 
-const filename, searchStr, bufferSize = "TODOs.txt", "TODOs", 1024
-const start, current, end = 0, 1, 2
+const filename, searchStr, bufferSize, start = "TODOs.txt", "TODOs", 1024, 0
 
 func main() {
 	file, err := os.Open(filename)
@@ -42,7 +41,7 @@ func main() {
 	length := len(builder)
 	content := builder[pos:length]
 
-	fmt.Println("")
+	fmt.Println("Content found.")
 	fmt.Println("")
 
 	fmt.Println(content)

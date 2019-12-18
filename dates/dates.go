@@ -7,27 +7,34 @@ import (
 	"time"
 )
 
-func main() {
-	re := regexp.MustCompile(`([0-2][0-9]|(3)[0-1])(\/)(((0)[0-9])|((1)[0-2]))(\/)\d{4}`)
-	val := re.Find([]byte(`TODOs 13/12/2019 asdfasdfadsf`))
+const dateRegEx = `([0-2][0-9]|(3)[0-1])(\/)(((0)[0-9])|((1)[0-2]))(\/)\d{4}`
+
+func FindDate(content string) string {
+	// RegEx date finder
+	re := regexp.MustCompile(dateRegEx)
+	val := re.Find([]byte(content))
+
+	// Split based on date delimiter
 	splitVals := strings.Split(string(val), "/")
 	reverse(splitVals)
-	fmt.Println(splitVals)
+
+	// Format date based on time lib requirement
 	formattedDate := strings.Join(splitVals, "-")
-	fmt.Println(formattedDate)
 	layout := "2006-01-02"
 	t, _ := time.Parse(layout, formattedDate)
-	fmt.Println(t)
-	fmt.Println("Adding a day")
+
+	// Add day
 	nextDay := t.AddDate(0, 0, 1)
-	fmt.Println(nextDay)
+
+	// Extract new date
 	splitNewDayInfo := strings.Split(nextDay.String(), " ")
 	newDate := splitNewDayInfo[0]
+
+	// Format new date to use original delimiter
 	splitNewDate := strings.Split(string(newDate), "-")
 	reverse(splitNewDate)
-	fmt.Println(splitNewDate)
 	formattedNewDate := strings.Join(splitNewDate, "/")
-	fmt.Println(formattedNewDate)
+	return formattedNewDate
 }
 
 func reverse(values []string) {
