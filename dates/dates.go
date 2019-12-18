@@ -1,33 +1,38 @@
 package dates
 
 import (
-	"fmt"
 	"regexp"
 	"strings"
 	"time"
+	"errors"
 )
 
-const dateRegEx = `([0-2][0-9]|(3)[0-1])(\/)(((0)[0-9])|((1)[0-2]))(\/)\d{4}`
+const dateRegEx, layout = `([0-2][0-9]|(3)[0-1])(\/)(((0)[0-9])|((1)[0-2]))(\/)\d{4}`, "2006-01-02"
 
-func FindDate(content string) string {
+func FindDate(content string) (string, error) {
 	// RegEx date finder
 	re := regexp.MustCompile(dateRegEx)
 	val := re.Find([]byte(content))
+	dateStr := string(val)
+	if dateStr == "" {
+		return "", errors.New("No date found in provided content")
+	}
+	return dateStr, nil
+}
 
+func ConvertToTime(dateStr string) (time.Time, error) {
 	// Split based on date delimiter
-	splitVals := strings.Split(string(val), "/")
+	splitVals := strings.Split(dateStr, "/")
 	reverse(splitVals)
 
 	// Format date based on time lib requirement
 	formattedDate := strings.Join(splitVals, "-")
-	layout := "2006-01-02"
-	t, _ := time.Parse(layout, formattedDate)
+	return time.Parse(layout, formattedDate)
+}
 
-	// Add day
-	nextDay := t.AddDate(0, 0, 1)
-
+func ExtractShortDate(t time.Time) string {
 	// Extract new date
-	splitNewDayInfo := strings.Split(nextDay.String(), " ")
+	splitNewDayInfo := strings.Split(t.String(), " ")
 	newDate := splitNewDayInfo[0]
 
 	// Format new date to use original delimiter
@@ -35,6 +40,11 @@ func FindDate(content string) string {
 	reverse(splitNewDate)
 	formattedNewDate := strings.Join(splitNewDate, "/")
 	return formattedNewDate
+
+}
+
+func AddDay(t time.Time) time.Time {
+	return t.AddDate(0, 0, 1)
 }
 
 func reverse(values []string) {
