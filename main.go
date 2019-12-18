@@ -9,7 +9,7 @@ import (
 	"github.com/davecremins/ToDo-Manager/content"
 )
 
-const filename, searchStr, bufferSize, start = "TODOs.txt", "TODOs", 1024, 0
+const filename, searchStr = "TODOs.txt", "TODOs"
 
 func main() {
 	file, err := os.Open(filename)
@@ -25,24 +25,25 @@ func main() {
 
 	contentContainingStr := content.FindSearchStr(file, size, searchStr)
 
-	fmt.Println("Content found.")
+	log.Println("Content found.")
 	fmt.Println("")
-
 	fmt.Println(contentContainingStr)
 
 	dateStr, err := dates.FindDate(contentContainingStr)
 	if err != nil {
 		panic("Failed to find date in content")
 	}
+
 	datetime, err := dates.ConvertToTime(dateStr)
 	if err != nil {
 		panic("Failed to convert date to time format")
 	}
+
 	datetime = dates.AddDay(datetime)
 	newDateStr := dates.ExtractShortDate(datetime)
 	newContent := strings.ReplaceAll(contentContainingStr, dateStr, newDateStr)
 
-	fmt.Println("Content updated with new date")
+	log.Println("Content updated with new date")
 	fmt.Println("")
 	fmt.Println(newContent)
 }
