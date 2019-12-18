@@ -1,8 +1,8 @@
 package content
 
 import (
-	"strings"
 	"os"
+	"strings"
 )
 
 const bufferSize = 1024

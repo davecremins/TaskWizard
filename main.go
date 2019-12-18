@@ -2,11 +2,11 @@ package main
 
 import (
 	"fmt"
+	"github.com/davecremins/ToDo-Manager/content"
+	"github.com/davecremins/ToDo-Manager/dates"
 	"log"
 	"os"
 	"strings"
-	"github.com/davecremins/ToDo-Manager/dates"
-	"github.com/davecremins/ToDo-Manager/content"
 )
 
 const filename, searchStr = "TODOs.txt", "TODOs"
