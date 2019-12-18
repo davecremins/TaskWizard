@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"strings"
+	"github.com/davecremins/ToDo-Manager/dates"
 )
 
 const filename, searchStr, bufferSize, start = "TODOs.txt", "TODOs", 1024, 0
@@ -45,4 +46,20 @@ func main() {
 	fmt.Println("")
 
 	fmt.Println(content)
+
+	dateStr, err := dates.FindDate(content)
+	if err != nil {
+		panic("Failed to find date in content")
+	}
+	datetime, err := dates.ConvertToTime(dateStr)
+	if err != nil {
+		panic("Failed to convert date to time format")
+	}
+	datetime = dates.AddDay(datetime)
+	newDateStr := dates.ExtractShortDate(datetime)
+	newContent := strings.ReplaceAll(content, dateStr, newDateStr)
+
+	fmt.Println("Content updated with new date")
+	fmt.Println("")
+	fmt.Println(newContent)
 }
