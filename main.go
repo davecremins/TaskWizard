@@ -6,6 +6,7 @@ import (
 	"os"
 	"strings"
 	"github.com/davecremins/ToDo-Manager/dates"
+	"github.com/davecremins/ToDo-Manager/content"
 )
 
 const filename, searchStr, bufferSize, start = "TODOs.txt", "TODOs", 1024, 0
@@ -22,32 +23,14 @@ func main() {
 	size := stats.Size()
 	log.Println("Size of file:", size)
 
-	buffer := make([]byte, bufferSize)
-	readPosition := size - bufferSize
-	var builder string
-
-	for {
-		file.Seek(readPosition, start)
-		file.Read(buffer)
-		builder = string(buffer) + builder
-
-		if strings.LastIndex(string(buffer), searchStr) >= 0 {
-			break
-		}
-
-		readPosition -= bufferSize
-	}
-
-	pos := strings.LastIndex(builder, searchStr)
-	length := len(builder)
-	content := builder[pos:length]
+	contentContainingStr := content.FindSearchStr(file, size, searchStr)
 
 	fmt.Println("Content found.")
 	fmt.Println("")
 
-	fmt.Println(content)
+	fmt.Println(contentContainingStr)
 
-	dateStr, err := dates.FindDate(content)
+	dateStr, err := dates.FindDate(contentContainingStr)
 	if err != nil {
 		panic("Failed to find date in content")
 	}
@@ -57,7 +40,7 @@ func main() {
 	}
 	datetime = dates.AddDay(datetime)
 	newDateStr := dates.ExtractShortDate(datetime)
-	newContent := strings.ReplaceAll(content, dateStr, newDateStr)
+	newContent := strings.ReplaceAll(contentContainingStr, dateStr, newDateStr)
 
 	fmt.Println("Content updated with new date")
 	fmt.Println("")
