@@ -43,8 +43,8 @@ func ExtractShortDate(t time.Time) string {
 
 }
 
-func AddDay(t time.Time) time.Time {
-	return t.AddDate(0, 0, 1)
+func AddDays(t time.Time, days int) time.Time {
+	return t.AddDate(0, 0, days)
 }
 
 func reverse(values []string) {
