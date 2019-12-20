@@ -9,6 +9,7 @@ import (
 type Config struct {
 	Filename  string `yaml:"filename"`
 	SearchStr string `yaml:"searchstr"`
+	DaysToAdd int    `yaml:"daysToAdd"`
 }
 
 func GetConfig(filename string) *Config {

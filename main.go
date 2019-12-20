@@ -39,7 +39,7 @@ func main() {
 		panic("Failed to convert date to time format")
 	}
 
-	datetime = dates.AddDay(datetime)
+	datetime = dates.AddDays(datetime, config.DaysToAdd)
 	newDateStr := dates.ExtractShortDate(datetime)
 	newContent := strings.ReplaceAll(contentContainingStr, dateStr, newDateStr)
 
