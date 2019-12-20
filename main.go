@@ -4,15 +4,15 @@ import (
 	"fmt"
 	"github.com/davecremins/ToDo-Manager/content"
 	"github.com/davecremins/ToDo-Manager/dates"
+	. "github.com/davecremins/ToDo-Manager/utilities"
 	"log"
 	"os"
 	"strings"
 )
 
-const filename, searchStr = "TODOs.txt", "TODOs"
-
 func main() {
-	file, err := os.OpenFile(filename, os.O_RDWR, 0666)
+	config := GetConfig("config.yaml")
+	file, err := os.OpenFile(config.Filename, os.O_RDWR, 0666)
 	defer file.Close()
 
 	if err != nil {
@@ -23,7 +23,7 @@ func main() {
 	size := stats.Size()
 	log.Println("Size of file:", size)
 
-	contentContainingStr := content.FindSearchStr(file, size, searchStr)
+	contentContainingStr := content.FindSearchStr(file, size, config.SearchStr)
 
 	log.Println("Content found.")
 	fmt.Println("")
