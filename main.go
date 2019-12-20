@@ -12,7 +12,7 @@ import (
 const filename, searchStr = "TODOs.txt", "TODOs"
 
 func main() {
-	file, err := os.Open(filename)
+	file, err := os.OpenFile(filename, os.O_RDWR, 0666)
 	defer file.Close()
 
 	if err != nil {
@@ -46,4 +46,16 @@ func main() {
 	log.Println("Content updated with new date")
 	fmt.Println("")
 	fmt.Println(newContent)
+
+	file.Seek(0, 2)
+	_, err = file.Write([]byte("\n\n"))
+	if err != nil {
+		panic("Falied to write newlines to file")
+	}
+
+	_, err = file.Write([]byte(newContent))
+	if err != nil {
+		panic("Falied to write new content to file")
+	}
+
 }
