@@ -16,5 +16,7 @@ func main() {
 		log.Fatalf("failed opening file: %s", err)
 	}
 
-	manager.CopyPreviousContent(config, file)
+	content := manager.CopyPreviousContent(config, file)
+	newContent := manager.ChangeDate(config, content)
+	manager.WriteContent(file, newContent)
 }
