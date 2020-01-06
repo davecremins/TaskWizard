@@ -4,10 +4,16 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"github.com/davecremins/ToDo-Manager/manager"
 	. "github.com/davecremins/ToDo-Manager/utilities"
+	"log"
+	"os"
 )
 
 func Process(args []string, defaultConfig *Config) error {
+	if len(args) < 2 {
+		return errors.New("expected subcommands to perform an action")
+	}
 
 	initCmd := flag.NewFlagSet("init", flag.ExitOnError)
 	filename := initCmd.String("filename", defaultConfig.Filename, "Name of file to initialise")
@@ -16,10 +22,6 @@ func Process(args []string, defaultConfig *Config) error {
 	searchStr := newCmd.String("search", defaultConfig.SearchStr, "Search string to look for")
 	daysToAdd := newCmd.Int("days", defaultConfig.DaysToAdd, "Total amount of days to increment by")
 
-	if len(args) < 2 {
-		return errors.New("expected subcommands to perform an action")
-	}
-
 	switch args[1] {
 
 	case "init":
@@ -27,15 +29,34 @@ func Process(args []string, defaultConfig *Config) error {
 		fmt.Println("subcommand 'init'")
 		fmt.Println("  filename:", *filename)
 		fmt.Println("  tail:", initCmd.Args())
+		defaultConfig.Filename = *filename
+		log.Println("Config over-written for init action")
 	case "newday":
 		newCmd.Parse(args[2:])
 		fmt.Println("subcommand 'newday'")
 		fmt.Println("  searchStr:", *searchStr)
 		fmt.Println("  days:", *daysToAdd)
 		fmt.Println("  tail:", newCmd.Args())
+		defaultConfig.SearchStr = *searchStr
+		defaultConfig.DaysToAdd = *daysToAdd
+		log.Println("Config over-written for newday action")
+		newDayAction(defaultConfig)
 	default:
 		return errors.New(args[1] + " subcommand is not supported right now :(")
 	}
 
 	return nil
+}
+
+func newDayAction(config *Config) {
+	file, err := os.OpenFile(config.Filename, os.O_RDWR, 0666)
+	defer file.Close()
+
+	if err != nil {
+		log.Fatalf("failed opening file: %s", err)
+	}
+
+	content := manager.CopyPreviousContent(config, file)
+	newContent := manager.ChangeDate(config, content)
+	manager.WriteContent(file, newContent)
 }
