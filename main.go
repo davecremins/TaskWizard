@@ -1,22 +1,12 @@
 package main
 
 import (
-	"github.com/davecremins/ToDo-Manager/manager"
+	. "github.com/davecremins/ToDo-Manager/cli"
 	. "github.com/davecremins/ToDo-Manager/utilities"
-	"log"
 	"os"
 )
 
 func main() {
 	config := GetConfig("config.yaml")
-	file, err := os.OpenFile(config.Filename, os.O_RDWR, 0666)
-	defer file.Close()
-
-	if err != nil {
-		log.Fatalf("failed opening file: %s", err)
-	}
-
-	content := manager.CopyPreviousContent(config, file)
-	newContent := manager.ChangeDate(config, content)
-	manager.WriteContent(file, newContent)
+	Process(os.Args, config)
 }
