@@ -1,7 +1,6 @@
 package actions
 
 import (
-	"errors"
 	"flag"
 	"fmt"
 	"github.com/davecremins/ToDo-Manager/manager"
@@ -10,9 +9,9 @@ import (
 	"os"
 )
 
-func Process(args []string, defaultConfig *Config) error {
+func Process(args []string, defaultConfig *Config) {
 	if len(args) < 2 {
-		return errors.New("expected subcommands to perform an action")
+		log.Fatal("expected subcommands to perform an action")
 	}
 
 	initCmd := flag.NewFlagSet("init", flag.ExitOnError)
@@ -42,10 +41,8 @@ func Process(args []string, defaultConfig *Config) error {
 		log.Println("Config over-written for newday action")
 		newDayAction(defaultConfig)
 	default:
-		return errors.New(args[1] + " subcommand is not supported right now :(")
+		log.Fatal(args[1] + " subcommand is not supported right now :(")
 	}
-
-	return nil
 }
 
 func newDayAction(config *Config) {
