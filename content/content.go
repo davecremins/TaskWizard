@@ -30,6 +30,6 @@ func FindSearchStr(contents *os.File, size int64, searchStr string) string {
 }
 
 func GetInitContentWithPlaceholders() string {
-	initContent := "TODOs %s\n================\n\nCompleted %s\n===================="
+	initContent := "TODOs %s\n================\n\nCompleted %s\n====================\n"
 	return initContent
 }

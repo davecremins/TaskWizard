@@ -60,6 +60,7 @@ func initAction(config *ToDoConfig) {
 	if err != nil {
 		log.Fatal("Error ocurred writing content for init action: ", err)
 	}
+	log.Println(config.Filename + " created successfully with default TODOs and Completed")
 }
 
 func newDayAction(config *ToDoConfig) {
