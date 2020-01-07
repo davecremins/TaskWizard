@@ -28,12 +28,12 @@ func initActionMakeup(args []string, config *ToDoConfig) ConfigFunc {
 }
 
 func newDayActionMakeup(args []string, config *ToDoConfig) ConfigFunc {
-	newCmd := flag.NewFlagSet("newday", flag.ExitOnError)
-	searchStr := newCmd.String("search", config.SearchStr, "Search string to look for")
-	daysToAdd := newCmd.Int("days", config.DaysToAdd, "Total amount of days to increment by")
-	filename := newCmd.String("filename", config.Filename, "Name of file to add new day to")
+	newDayCmd := flag.NewFlagSet("newday", flag.ExitOnError)
+	searchStr := newDayCmd.String("search", config.SearchStr, "Search string to look for")
+	daysToAdd := newDayCmd.Int("days", config.DaysToAdd, "Total amount of days to increment by")
+	filename := newDayCmd.String("filename", config.Filename, "Name of file to add new day to")
 	action := func(config *ToDoConfig) {
-		newCmd.Parse(args[2:])
+		newDayCmd.Parse(args[2:])
 		config.SearchStr = *searchStr
 		config.DaysToAdd = *daysToAdd
 		config.Filename = *filename
