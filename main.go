@@ -2,11 +2,11 @@ package main
 
 import (
 	. "github.com/davecremins/ToDo-Manager/cli"
-	. "github.com/davecremins/ToDo-Manager/utilities"
+	. "github.com/davecremins/ToDo-Manager/config"
 	"os"
 )
 
 func main() {
-	config := GetConfig("config.yaml")
+	config := LoadConfig()
 	Process(os.Args, config)
 }

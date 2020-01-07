@@ -2,15 +2,15 @@ package manager
 
 import (
 	"fmt"
+	. "github.com/davecremins/ToDo-Manager/config"
 	"github.com/davecremins/ToDo-Manager/content"
 	"github.com/davecremins/ToDo-Manager/dates"
-	. "github.com/davecremins/ToDo-Manager/utilities"
 	"log"
 	"os"
 	"strings"
 )
 
-func CopyPreviousContent(config *Config, file *os.File) string {
+func CopyPreviousContent(config *ToDoConfig, file *os.File) string {
 	stats, _ := file.Stat()
 	size := stats.Size()
 	log.Println("Size of file:", size)
@@ -24,7 +24,7 @@ func CopyPreviousContent(config *Config, file *os.File) string {
 	return contentContainingStr
 }
 
-func ChangeDate(config *Config, content string) string {
+func ChangeDate(config *ToDoConfig, content string) string {
 	dateStr, err := dates.FindDate(content)
 	if err != nil {
 		panic("Failed to find date in content")
