@@ -10,7 +10,12 @@ const (
 	CONFIG_NAME    = "ToDo-Manager.yaml"
 )
 
+var userDirForConfig string
+
 func init() {
+	home, err := os.UserHomeDir()
+	checkError(err)
+	userDirForConfig = home + "/" + DIRECTORY_NAME
 	createConfig()
 }
 
@@ -20,21 +25,18 @@ func checkError(e error) {
 	}
 }
 
-func userDirectoryForToDoConfig() string {
-	home, err := os.UserHomeDir()
-	checkError(err)
-	return home + "/" + DIRECTORY_NAME
+func fullPathToConfigFile() string {
+	return userDirForConfig + "/" + CONFIG_NAME
 }
 
 func createConfig() {
-	userDirectoryForToDo := userDirectoryForToDoConfig()
-	if _, err := os.Stat(userDirectoryForToDo); os.IsNotExist(err) {
+	if _, err := os.Stat(userDirForConfig); os.IsNotExist(err) {
 		log.Println("Required directory missing")
-		err := os.Mkdir(userDirectoryForToDo, 0755)
+		err := os.Mkdir(userDirForConfig, 0755)
 		checkError(err)
-		log.Println(userDirectoryForToDo + " directory created successfully")
+		log.Println(userDirForConfig + " directory created successfully")
 		defaultConfig := NewDefault()
-		err = SaveConfig(*defaultConfig, userDirectoryForToDo+"/"+CONFIG_NAME)
+		err = SaveConfig(*defaultConfig, fullPathToConfigFile())
 		checkError(err)
 		log.Println(CONFIG_NAME + " configuration created successfully")
 	} else {
@@ -43,7 +45,6 @@ func createConfig() {
 }
 
 func LoadConfig() *ToDoConfig {
-	userDirectoryForToDo := userDirectoryForToDoConfig()
-	config := GetConfig(userDirectoryForToDo + "/" + CONFIG_NAME)
+	config := GetConfig(fullPathToConfigFile())
 	return config
 }
