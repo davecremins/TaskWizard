@@ -2,10 +2,15 @@ package actions
 
 import (
 	"flag"
+	"fmt"
 	. "github.com/davecremins/ToDo-Manager/config"
+	"github.com/davecremins/ToDo-Manager/content"
+	"github.com/davecremins/ToDo-Manager/dates"
 	"github.com/davecremins/ToDo-Manager/manager"
+	"io/ioutil"
 	"log"
 	"os"
+	"time"
 )
 
 type ConfigFunc func(*ToDoConfig)
@@ -25,7 +30,7 @@ func Process(args []string, defaultConfig *ToDoConfig) {
 		initCmd.Parse(args[2:])
 		config.Filename = *filename
 		log.Println("Config over-written for init action")
-		log.Println("No implementation provided")
+		initAction(config)
 	}
 
 	newCmd := flag.NewFlagSet("newday", flag.ExitOnError)
@@ -45,6 +50,17 @@ func Process(args []string, defaultConfig *ToDoConfig) {
 		log.Fatal(args[1] + " subcommand is not supported right now :(")
 	}
 	action(defaultConfig)
+}
+
+func initAction(config *ToDoConfig) {
+	initContent := content.GetInitContentWithPlaceholders()
+	formattedDate := dates.ExtractShortDate(time.Now())
+	filledInitContent := fmt.Sprintf(initContent, formattedDate, formattedDate)
+	err := ioutil.WriteFile(config.Filename, []byte(filledInitContent), 0644)
+	if err != nil {
+		log.Fatal("Error ocurred writing content for init action: ", err)
+	}
+	log.Println(config.Filename + " created successfully with default TODOs and Completed")
 }
 
 func newDayAction(config *ToDoConfig) {
