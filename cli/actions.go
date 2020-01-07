@@ -2,26 +2,28 @@ package actions
 
 import (
 	"flag"
+	. "github.com/davecremins/ToDo-Manager/config"
 	"github.com/davecremins/ToDo-Manager/manager"
-	. "github.com/davecremins/ToDo-Manager/utilities"
 	"log"
 	"os"
 )
 
-var actionMap map[string]func(*Config)
+type ConfigFunc func(*ToDoConfig)
 
-func Process(args []string, defaultConfig *Config) {
+var actionMap map[string]ConfigFunc
+
+func Process(args []string, defaultConfig *ToDoConfig) {
 	if len(args) < 2 {
 		log.Fatal("expected subcommands to perform an action")
 	}
 
-	actionMap = make(map[string]func(*Config))
+	actionMap = make(map[string]ConfigFunc)
 
 	initCmd := flag.NewFlagSet("init", flag.ExitOnError)
 	filename := initCmd.String("filename", defaultConfig.Filename, "Name of file to initialise")
-	actionMap["init"] = func(config *Config) {
+	actionMap["init"] = func(config *ToDoConfig) {
 		initCmd.Parse(args[2:])
-		defaultConfig.Filename = *filename
+		config.Filename = *filename
 		log.Println("Config over-written for init action")
 		log.Println("No implementation provided")
 	}
@@ -29,12 +31,12 @@ func Process(args []string, defaultConfig *Config) {
 	newCmd := flag.NewFlagSet("newday", flag.ExitOnError)
 	searchStr := newCmd.String("search", defaultConfig.SearchStr, "Search string to look for")
 	daysToAdd := newCmd.Int("days", defaultConfig.DaysToAdd, "Total amount of days to increment by")
-	actionMap["newday"] = func(config *Config) {
+	actionMap["newday"] = func(config *ToDoConfig) {
 		newCmd.Parse(args[2:])
-		defaultConfig.SearchStr = *searchStr
-		defaultConfig.DaysToAdd = *daysToAdd
+		config.SearchStr = *searchStr
+		config.DaysToAdd = *daysToAdd
 		log.Println("Config over-written for newday action")
-		newDayAction(defaultConfig)
+		newDayAction(config)
 
 	}
 
@@ -45,7 +47,7 @@ func Process(args []string, defaultConfig *Config) {
 	action(defaultConfig)
 }
 
-func newDayAction(config *Config) {
+func newDayAction(config *ToDoConfig) {
 	file, err := os.OpenFile(config.Filename, os.O_RDWR, 0666)
 	defer file.Close()
 
