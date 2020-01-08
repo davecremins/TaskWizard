@@ -24,6 +24,30 @@ func CopyPreviousContent(config *ToDoConfig, file *os.File) string {
 	return contentContainingStr
 }
 
+func AddNewItem(config *ToDoConfig, file *os.File, newItem string) {
+	stats, _ := file.Stat()
+	size := stats.Size()
+	log.Println("Size of file:", size)
+
+	position := content.FindSearchStrLocation(file, size, "Completed")
+	log.Println("Position found: ", position)
+	log.Println("Increasing size by 1 to account for newline")
+	position += 1
+
+	writingPos := size - int64(position)
+	file.Seek(writingPos, 0)
+	_, err := file.Write([]byte(newItem))
+	if err != nil {
+		panic("Falied to write new item to file")
+	}
+
+	_, err = file.Write([]byte("\n"))
+	if err != nil {
+		panic("Falied to write new content to file")
+	}
+
+}
+
 func ChangeDate(config *ToDoConfig, content string) string {
 	dateStr, err := dates.FindDate(content)
 	if err != nil {

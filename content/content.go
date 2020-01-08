@@ -8,6 +8,15 @@ import (
 const bufferSize = 1024
 
 func FindSearchStr(contents *os.File, size int64, searchStr string) string {
+	return bottomUpSearch(contents, size, searchStr)
+}
+
+func FindSearchStrLocation(contents *os.File, size int64, searchStr string) int {
+	searchContent := bottomUpSearch(contents, size, searchStr)
+	return len(searchContent)
+}
+
+func bottomUpSearch(contents *os.File, size int64, searchStr string) string {
 	buffer := make([]byte, bufferSize)
 	readPosition := size - bufferSize
 	var builder string
