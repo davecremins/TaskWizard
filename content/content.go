@@ -5,7 +5,10 @@ import (
 	"strings"
 )
 
-const bufferSize = 1024
+const (
+	bufferSize = 1024
+	SAFE_LOOP = 10
+)
 
 func FindSearchStr(contents *os.File, size int64, searchStr string) string {
 	return bottomUpSearch(contents, size, searchStr)
@@ -17,11 +20,17 @@ func FindSearchStrLocation(contents *os.File, size int64, searchStr string) int 
 }
 
 func bottomUpSearch(contents *os.File, size int64, searchStr string) string {
-	buffer := make([]byte, bufferSize)
-	readPosition := size - bufferSize
+	i := 0
+	bufSize := int64(bufferSize)
+	if size < bufSize {
+		bufSize = size
+	}
+	buffer := make([]byte, bufSize)
+	readPosition := size - bufSize
 	var builder string
 
 	for {
+		i++
 		contents.Seek(readPosition, 0)
 		contents.Read(buffer)
 		builder = string(buffer) + builder
@@ -30,7 +39,10 @@ func bottomUpSearch(contents *os.File, size int64, searchStr string) string {
 			break
 		}
 
-		readPosition -= bufferSize
+		readPosition -= bufSize
+		if i == SAFE_LOOP {
+			panic("SAFE LOOP count hit without fulfillment")
+		}
 	}
 
 	pos := strings.LastIndex(builder, searchStr)

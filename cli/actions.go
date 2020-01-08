@@ -89,6 +89,7 @@ func newTodoAction(config *ToDoConfig, todo string) {
 	if err != nil {
 		log.Fatalf("failed opening file: %s", err)
 	}
-
+	log.Println("Adding new item")
 	manager.AddNewItem(config, file, todo)
+	log.Println("Added new item")
 }
