@@ -80,6 +80,7 @@ func newDayAction(config *ToDoConfig) {
 	content := manager.CopyPreviousContent(config, file)
 	newContent := manager.ChangeDate(config, content)
 	manager.WriteContent(file, newContent)
+	log.Println("New day todos copied successfully")
 }
 
 func newTodoAction(config *ToDoConfig, todo string) {
@@ -89,7 +90,7 @@ func newTodoAction(config *ToDoConfig, todo string) {
 	if err != nil {
 		log.Fatalf("failed opening file: %s", err)
 	}
-	log.Println("Adding new item")
+
 	manager.AddNewItem(config, file, todo)
-	log.Println("Added new item")
+	log.Println("New todo item added successfully")
 }

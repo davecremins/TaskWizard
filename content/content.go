@@ -14,11 +14,6 @@ func FindSearchStr(contents *os.File, size int64, searchStr string) string {
 	return bottomUpSearch(contents, size, searchStr)
 }
 
-func FindSearchStrLocation(contents *os.File, size int64, searchStr string) int {
-	searchContent := bottomUpSearch(contents, size, searchStr)
-	return len(searchContent)
-}
-
 func bottomUpSearch(contents *os.File, size int64, searchStr string) string {
 	i := 0
 	bufSize := int64(bufferSize)

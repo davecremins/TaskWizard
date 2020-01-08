@@ -32,7 +32,7 @@ func AddNewItem(config *ToDoConfig, file *os.File, newItem string) {
 	contentContainingStr := content.FindSearchStr(file, size, "Completed")
 	contentSize := len(contentContainingStr)
 	log.Println("Position found: ", contentSize)
-	log.Println("Increasing size by 1 to account for newline")
+	// Account for newline
 	contentSize += 1
 
 	writingPos := size - int64(contentSize)
