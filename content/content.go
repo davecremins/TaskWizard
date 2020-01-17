@@ -7,7 +7,7 @@ import (
 
 const (
 	bufferSize = 1024
-	SAFE_LOOP = 10
+	SAFE_LOOP  = 10
 )
 
 func FindSearchStr(contents *os.File, size int64, searchStr string) string {

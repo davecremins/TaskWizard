@@ -58,6 +58,21 @@ func newTodoActionMakeup(args []string, config *ToDoConfig) ConfigFunc {
 	return action
 }
 
+func todaysTodosActionMakeup(args []string, config *ToDoConfig) ConfigFunc {
+	todaysTodosCmd := flag.NewFlagSet("today", flag.ExitOnError)
+	searchStr := todaysTodosCmd.String("search", config.SearchStr, "Search string to look for")
+	filename := todaysTodosCmd.String("filename", config.Filename, "Name of file to search in")
+	action := func(config *ToDoConfig) {
+		todaysTodosCmd.Parse(args[2:])
+		config.SearchStr = *searchStr
+		config.Filename = *filename
+		log.Println("Config over-written for today action")
+		todaysTodosAction(config)
+	}
+	return action
+
+}
+
 func initAction(config *ToDoConfig) {
 	initContent := content.GetInitContentWithPlaceholders()
 	formattedDate := dates.ExtractShortDate(time.Now())
@@ -77,7 +92,12 @@ func newDayAction(config *ToDoConfig) {
 		log.Fatalf("failed opening file: %s", err)
 	}
 
-	content := manager.CopyPreviousContent(config, file)
+	content := manager.GetContent(config, file)
+
+	log.Println("Content found.")
+	fmt.Println("")
+	fmt.Println(content)
+
 	newContent := manager.ChangeDate(config, content)
 	manager.WriteContent(file, newContent)
 	log.Println("New day todos copied successfully")
@@ -93,4 +113,18 @@ func newTodoAction(config *ToDoConfig, todo string) {
 
 	manager.AddNewItem(config, file, todo)
 	log.Println("New todo item added successfully")
+}
+
+func todaysTodosAction(config *ToDoConfig) {
+	file, err := os.OpenFile(config.Filename, os.O_RDWR, 0666)
+	defer file.Close()
+
+	if err != nil {
+		log.Fatalf("failed opening file: %s", err)
+	}
+
+	content := manager.GetContent(config, file)
+
+	fmt.Println("")
+	fmt.Println(content)
 }
