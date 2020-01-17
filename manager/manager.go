@@ -10,17 +10,12 @@ import (
 	"strings"
 )
 
-func CopyPreviousContent(config *ToDoConfig, file *os.File) string {
+func GetContent(config *ToDoConfig, file *os.File) string {
 	stats, _ := file.Stat()
 	size := stats.Size()
 	log.Println("Size of file:", size)
 
 	contentContainingStr := content.FindSearchStr(file, size, config.SearchStr)
-
-	log.Println("Content found.")
-	fmt.Println("")
-	fmt.Println(contentContainingStr)
-
 	return contentContainingStr
 }
 
