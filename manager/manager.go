@@ -1,7 +1,6 @@
 package manager
 
 import (
-	"fmt"
 	. "github.com/davecremins/ToDo-Manager/config"
 	"github.com/davecremins/ToDo-Manager/content"
 	"github.com/davecremins/ToDo-Manager/dates"
@@ -62,10 +61,7 @@ func ChangeDate(config *ToDoConfig, content string) string {
 	datetime = dates.AddDays(datetime, config.DaysToAdd)
 	newDateStr := dates.ExtractShortDate(datetime)
 	newContent := strings.ReplaceAll(content, dateStr, newDateStr)
-
 	log.Println("Content updated with new date")
-	fmt.Println("")
-	fmt.Println(newContent)
 
 	return newContent
 }

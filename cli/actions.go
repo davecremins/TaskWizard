@@ -1,6 +1,7 @@
 package actions
 
 import (
+	"bufio"
 	"flag"
 	"fmt"
 	. "github.com/davecremins/ToDo-Manager/config"
@@ -10,6 +11,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -93,13 +95,27 @@ func newDayAction(config *ToDoConfig) {
 	}
 
 	content := manager.GetContent(config, file)
-
-	log.Println("Content found.")
-	fmt.Println("")
-	fmt.Println(content)
-
 	newContent := manager.ChangeDate(config, content)
-	manager.WriteContent(file, newContent)
+	scanner := bufio.NewScanner(strings.NewReader(newContent))
+	scanner.Split(bufio.ScanLines)
+	strFound := false
+	readAfterFound := 0
+	var take []string
+	for scanner.Scan() {
+		output := scanner.Text()
+		strFound = strings.Contains(output, "Completed")
+		take = append(take, output)
+		if strFound || readAfterFound > 0 {
+			readAfterFound++
+		}
+
+		if readAfterFound == 2 {
+			log.Println("Previous completed todos removed successfully")
+			break
+		}
+	}
+
+	manager.WriteContent(file, strings.Join(take, "\n"))
 	log.Println("New day todos copied successfully")
 }
 

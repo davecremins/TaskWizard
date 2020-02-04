@@ -1,6 +1,7 @@
 package actions
 
 import (
+	"flag"
 	. "github.com/davecremins/ToDo-Manager/config"
 	"log"
 )
@@ -21,6 +22,7 @@ func Process(args []string, defaultConfig *ToDoConfig) {
 	action, ok := actionMap[args[1]]
 	if !ok {
 		log.Fatal(args[1] + " subcommand is not supported right now :(")
+		flag.PrintDefaults()
 	}
 	action(defaultConfig)
 }
