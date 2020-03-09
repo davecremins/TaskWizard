@@ -7,6 +7,7 @@ import (
 	. "github.com/davecremins/ToDo-Manager/config"
 	"github.com/davecremins/ToDo-Manager/content"
 	"github.com/davecremins/ToDo-Manager/dates"
+	"github.com/davecremins/ToDo-Manager/display"
 	"github.com/davecremins/ToDo-Manager/manager"
 	"io/ioutil"
 	"log"
@@ -142,5 +143,5 @@ func todaysTodosAction(config *ToDoConfig) {
 	content := manager.GetContent(config, file)
 
 	fmt.Println("")
-	fmt.Println(content)
+	display.PrintWithIndent(content)
 }
