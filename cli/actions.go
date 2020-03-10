@@ -167,4 +167,8 @@ func completeTodoAction(config *ToDoConfig) {
 
 	fmt.Println("")
 	display.PresentItems(content)
+	option := display.AcceptInput()
+
+	s := fmt.Sprintf("Option %s captured", option)
+	fmt.Println(s)
 }

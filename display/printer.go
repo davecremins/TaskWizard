@@ -4,20 +4,25 @@ import (
 	"bufio"
 	"fmt"
 	"log"
+	"os"
 	"strconv"
 	"strings"
 )
 
 const level = 8
 
-func PrintWithIndent(content string) {
+func createIndentStr() string {
 	indent := ""
 	for i := 0; i < level; i++ {
 		indent += " "
 	}
+	return indent
+}
 
+func PrintWithIndent(content string) {
 	scanner := bufio.NewScanner(strings.NewReader(content))
 	scanner.Split(bufio.ScanLines)
+	indent := createIndentStr()
 	for scanner.Scan() {
 		fmt.Println(indent + scanner.Text())
 	}
@@ -28,14 +33,9 @@ func PrintWithIndent(content string) {
 }
 
 func PresentItems(content string) {
-	indent := ""
-	for i := 0; i < level; i++ {
-		indent += " "
-	}
-
 	scanner := bufio.NewScanner(strings.NewReader(content))
 	scanner.Split(bufio.ScanLines)
-
+	indent := createIndentStr()
 	i, beginNumbering, num := 0, 1, 1
 	for scanner.Scan() {
 		line := scanner.Text()
@@ -55,4 +55,15 @@ func PresentItems(content string) {
 	if err := scanner.Err(); err != nil {
 		log.Fatal(err)
 	}
+}
+
+func AcceptInput() string {
+	fmt.Println("")
+	scanner := bufio.NewScanner(os.Stdin)
+	indent := createIndentStr()
+	fmt.Print(indent + "Enter item number to be completed: ")
+	scanner.Scan()
+	text := scanner.Text()
+
+	return text
 }
