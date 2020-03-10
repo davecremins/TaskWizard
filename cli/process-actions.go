@@ -18,6 +18,7 @@ func Process(args []string, defaultConfig *ToDoConfig) {
 	actionMap["newday"] = newDayActionMakeup(args, defaultConfig)
 	actionMap["newtodo"] = newTodoActionMakeup(args, defaultConfig)
 	actionMap["today"] = todaysTodosActionMakeup(args, defaultConfig)
+	actionMap["complete"] = completeTodoActionMakeup(args, defaultConfig)
 
 	action, ok := actionMap[args[1]]
 	if !ok {

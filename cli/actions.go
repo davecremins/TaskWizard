@@ -76,6 +76,15 @@ func todaysTodosActionMakeup(args []string, config *ToDoConfig) ConfigFunc {
 
 }
 
+func completeTodoActionMakeup(args []string, config *ToDoConfig) ConfigFunc {
+	flag.NewFlagSet("complete", flag.ExitOnError)
+	action := func(config *ToDoConfig) {
+		log.Println("Config not over-written for complete action")
+		completeTodoAction(config)
+	}
+	return action
+}
+
 func initAction(config *ToDoConfig) {
 	initContent := content.GetInitContentWithPlaceholders()
 	formattedDate := dates.ExtractShortDate(time.Now())
@@ -144,4 +153,18 @@ func todaysTodosAction(config *ToDoConfig) {
 
 	fmt.Println("")
 	display.PrintWithIndent(content)
+}
+
+func completeTodoAction(config *ToDoConfig) {
+	file, err := os.OpenFile(config.Filename, os.O_RDWR, 0666)
+	defer file.Close()
+
+	if err != nil {
+		log.Fatalf("failed opening file: %s", err)
+	}
+
+	content := manager.GetContent(config, file)
+
+	fmt.Println("")
+	display.PresentItems(content)
 }
