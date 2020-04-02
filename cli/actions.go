@@ -153,6 +153,7 @@ func todaysTodosAction(config *ToDoConfig) {
 
 	fmt.Println("")
 	display.PrintWithIndent(content)
+	fmt.Println("")
 }
 
 func completeTodoAction(config *ToDoConfig) {
