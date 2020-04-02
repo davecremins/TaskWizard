@@ -34,7 +34,7 @@ func NewOrganisedContent(content string) *OrganisedContent {
 	}
 
 	if err := scanner.Err(); err != nil {
-		panic("error scanning content")
+		panic(err)
 	}
 
 	return organisedContent
