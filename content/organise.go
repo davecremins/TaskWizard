@@ -60,3 +60,19 @@ func (c *OrganisedContent) MergeContent() {
 
 	c.MergedContent = sb.String()
 }
+
+func (c *OrganisedContent) CompleteTODO(todoPos int) {
+	lengthIgnoringHeadings := len(c.TODOs)-2
+	if lengthIgnoringHeadings == 0 {
+		panic("No TODO to complete")
+	}
+	if (todoPos > lengthIgnoringHeadings || todoPos <= 0) {
+		panic("TODO item number is out of bounds")
+	}
+
+	// Account for headings
+	realIndex := todoPos + 1
+	todo := c.TODOs[realIndex]
+	c.Completed = append(c.Completed, todo)
+	c.TODOs = append(c.TODOs[:realIndex], c.TODOs[realIndex+1:]...)
+}

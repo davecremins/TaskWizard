@@ -86,3 +86,33 @@ Write some code`
 		t.Logf("Size of got %d and want %d", len(organisedContent.MergedContent), len(want))
 	}
 }
+
+func TestMoveTODOToCompleted(t *testing.T) {
+	content := `TODOs 13/01/2020
+================
+Do Something in the evening
+Write some code
+
+Completed 13/01/2020
+====================
+Finished a book`
+
+
+	want := `TODOs 13/01/2020
+================
+Write some code
+
+Completed 13/01/2020
+====================
+Finished a book
+Do Something in the evening`
+
+	organisedContent := NewOrganisedContent(content)
+	organisedContent.CompleteTODO(1)
+	organisedContent.MergeContent()
+
+	if want != organisedContent.MergedContent {
+		t.Errorf("Merged content is incorrect got %s, want %s", organisedContent.MergedContent, want)
+		t.Logf("Size of got %d and want %d", len(organisedContent.MergedContent), len(want))
+	}
+}
