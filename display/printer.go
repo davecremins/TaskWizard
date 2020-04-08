@@ -44,10 +44,10 @@ func PresentItems(content string) {
 		}
 
 		if i > beginNumbering {
-			fmt.Println(indent + strconv.Itoa(num) + ") " + line)
+			fmt.Println(ApplyTODOColor(indent + strconv.Itoa(num) + ") " + line))
 			num++
 		} else {
-			fmt.Println(indent + line)
+			fmt.Println(ApplyHeadingColor(indent + line))
 		}
 		i++
 	}
