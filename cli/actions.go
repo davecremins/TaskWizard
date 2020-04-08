@@ -12,6 +12,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -74,6 +75,15 @@ func todaysTodosActionMakeup(args []string, config *ToDoConfig) ConfigFunc {
 	}
 	return action
 
+}
+
+func completeTodoActionMakeup(args []string, config *ToDoConfig) ConfigFunc {
+	flag.NewFlagSet("complete", flag.ExitOnError)
+	action := func(config *ToDoConfig) {
+		log.Println("Config not over-written for complete action")
+		completeTodoAction(config)
+	}
+	return action
 }
 
 func initAction(config *ToDoConfig) {
@@ -140,8 +150,34 @@ func todaysTodosAction(config *ToDoConfig) {
 		log.Fatalf("failed opening file: %s", err)
 	}
 
-	content := manager.GetContent(config, file)
+	contents := manager.GetContent(config, file)
 
 	fmt.Println("")
-	display.PrintWithIndent(content)
+	display.PrintWithIndent(contents)
+	fmt.Println("")
+}
+
+func completeTodoAction(config *ToDoConfig) {
+	file, err := os.OpenFile(config.Filename, os.O_RDWR, 0666)
+	defer file.Close()
+
+	if err != nil {
+		log.Fatalf("failed opening file: %s", err)
+	}
+
+	contents := manager.GetContent(config, file)
+
+	fmt.Println("")
+	display.PresentItems(contents)
+	option := display.AcceptInput()
+	i, err := strconv.Atoi(option)
+	if err != nil {
+		panic(err)
+	}
+
+	organisedContent := content.NewOrganisedContent(contents)
+	organisedContent.CompleteTODO(i)
+	organisedContent.MergeContent()
+	manager.WriteUpdatedContent(file, len(contents), organisedContent.MergedContent)
+	log.Println("Updated content written to file successfully")
 }
