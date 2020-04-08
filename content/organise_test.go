@@ -97,7 +97,6 @@ Completed 13/01/2020
 ====================
 Finished a book`
 
-
 	want := `TODOs 13/01/2020
 ================
 Write some code

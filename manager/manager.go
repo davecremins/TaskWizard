@@ -25,7 +25,7 @@ func AddNewItem(config *ToDoConfig, file *os.File, newItem string) {
 
 	contentContainingStr := content.FindSearchStr(file, size, "Completed")
 	contentSize := len(contentContainingStr)
-	log.Println("Position found: ", contentSize)
+	log.Println("Position found:", contentSize)
 	// Account for newline
 	contentSize += 1
 
@@ -44,6 +44,18 @@ func AddNewItem(config *ToDoConfig, file *os.File, newItem string) {
 	_, err = file.Write([]byte(contentContainingStr))
 	if err != nil {
 		panic("Falied to write original content to file")
+	}
+}
+
+func WriteUpdatedContent(file *os.File, originalContentSize int, newContent string) {
+	stats, _ := file.Stat()
+	size := stats.Size()
+
+	writingPos := size - int64(originalContentSize)
+	file.Seek(writingPos, 0)
+	_, err := file.Write([]byte(newContent))
+	if err != nil {
+		panic("Falied to write updated content to file")
 	}
 }
 

@@ -62,11 +62,11 @@ func (c *OrganisedContent) MergeContent() {
 }
 
 func (c *OrganisedContent) CompleteTODO(todoPos int) {
-	lengthIgnoringHeadings := len(c.TODOs)-2
+	lengthIgnoringHeadings := len(c.TODOs) - 2
 	if lengthIgnoringHeadings == 0 {
 		panic("No TODO to complete")
 	}
-	if (todoPos > lengthIgnoringHeadings || todoPos <= 0) {
+	if todoPos > lengthIgnoringHeadings || todoPos <= 0 {
 		panic("TODO item number is out of bounds")
 	}
 

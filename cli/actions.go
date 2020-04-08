@@ -12,6 +12,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -149,10 +150,10 @@ func todaysTodosAction(config *ToDoConfig) {
 		log.Fatalf("failed opening file: %s", err)
 	}
 
-	content := manager.GetContent(config, file)
+	contents := manager.GetContent(config, file)
 
 	fmt.Println("")
-	display.PrintWithIndent(content)
+	display.PrintWithIndent(contents)
 	fmt.Println("")
 }
 
@@ -164,12 +165,19 @@ func completeTodoAction(config *ToDoConfig) {
 		log.Fatalf("failed opening file: %s", err)
 	}
 
-	content := manager.GetContent(config, file)
+	contents := manager.GetContent(config, file)
 
 	fmt.Println("")
-	display.PresentItems(content)
+	display.PresentItems(contents)
 	option := display.AcceptInput()
+	i, err := strconv.Atoi(option)
+	if err != nil {
+		panic(err)
+	}
 
-	s := fmt.Sprintf("Option %s captured", option)
-	fmt.Println(s)
+	organisedContent := content.NewOrganisedContent(contents)
+	organisedContent.CompleteTODO(i)
+	organisedContent.MergeContent()
+	manager.WriteUpdatedContent(file, len(contents), organisedContent.MergedContent)
+	log.Println("Updated content written to file successfully")
 }

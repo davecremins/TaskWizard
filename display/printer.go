@@ -61,9 +61,8 @@ func AcceptInput() string {
 	fmt.Println("")
 	scanner := bufio.NewScanner(os.Stdin)
 	indent := createIndentStr()
-	fmt.Print(indent + "Enter item number to be completed: ")
+	fmt.Print(indent + "Enter TODO number for completion: ")
 	scanner.Scan()
 	text := scanner.Text()
-
 	return text
 }
