@@ -9,22 +9,20 @@ import (
 	"strings"
 )
 
-const level = 8
+const indentLevel = 8
+var indentStr string
 
-func createIndentStr() string {
-	indent := ""
-	for i := 0; i < level; i++ {
-		indent += " "
+func init() {
+	for i := 0; i < indentLevel; i++ {
+		indentStr += " "
 	}
-	return indent
 }
 
 func PrintWithIndent(content string) {
 	scanner := bufio.NewScanner(strings.NewReader(content))
 	scanner.Split(bufio.ScanLines)
-	indent := createIndentStr()
 	for scanner.Scan() {
-		fmt.Println(indent + scanner.Text())
+		fmt.Println(indentStr + scanner.Text())
 	}
 
 	if err := scanner.Err(); err != nil {
@@ -35,7 +33,6 @@ func PrintWithIndent(content string) {
 func PresentItems(content string) {
 	scanner := bufio.NewScanner(strings.NewReader(content))
 	scanner.Split(bufio.ScanLines)
-	indent := createIndentStr()
 	i, beginNumbering, num := 0, 1, 1
 	for scanner.Scan() {
 		line := scanner.Text()
@@ -44,10 +41,11 @@ func PresentItems(content string) {
 		}
 
 		if i > beginNumbering {
-			fmt.Println(ApplyTODOColor(indent + strconv.Itoa(num) + ") " + line))
+			s := fmt.Sprintf("%s%s) %s", indentStr, strconv.Itoa(num), line)
+			fmt.Println(ApplyTODOColor(s))
 			num++
 		} else {
-			fmt.Println(ApplyHeadingColor(indent + line))
+			fmt.Println(ApplyHeadingColor(indentStr + line))
 		}
 		i++
 	}
@@ -60,8 +58,7 @@ func PresentItems(content string) {
 func AcceptInput() string {
 	fmt.Println("")
 	scanner := bufio.NewScanner(os.Stdin)
-	indent := createIndentStr()
-	fmt.Print(indent + "Enter TODO number for completion: ")
+	fmt.Printf("%sEnter TODO number for completion: ", indentStr)
 	scanner.Scan()
 	text := scanner.Text()
 	return text
