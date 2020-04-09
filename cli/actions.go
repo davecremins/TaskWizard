@@ -151,9 +151,10 @@ func todaysTodosAction(config *ToDoConfig) {
 	}
 
 	contents := manager.GetContent(config, file)
+	organisedContent := content.NewOrganisedContent(contents)
 
 	fmt.Println("")
-	display.PrintWithIndent(contents)
+	display.PrintWithIndent(organisedContent)
 	fmt.Println("")
 }
 

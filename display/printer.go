@@ -7,6 +7,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"github.com/davecremins/ToDo-Manager/content"
 )
 
 const indentLevel = 8
@@ -18,18 +19,34 @@ func init() {
 	}
 }
 
-func PrintWithIndent(content string) {
-	scanner := bufio.NewScanner(strings.NewReader(content))
-	scanner.Split(bufio.ScanLines)
-	for scanner.Scan() {
-		fmt.Println(indentStr + scanner.Text())
+// USE OrganisedContent type here
+func PrintWithIndent(organisedContent *content.OrganisedContent) {
+	i, str := 0, ""
+	for _, todo := range organisedContent.TODOs {
+		if i <= 1 {
+			str = ApplyHeadingColor(todo)
+		} else {
+			str = ApplyTODOColor(todo)
+		}
+		i++
+		fmt.Println(fmt.Sprintf("%s%s", indentStr, str))
 	}
 
-	if err := scanner.Err(); err != nil {
-		log.Fatal(err)
+	i = 0
+	fmt.Println("")
+
+	for _, completed := range organisedContent.Completed {
+		if i <= 1 {
+			str = ApplyHeadingColor(completed)
+		} else {
+			str = ApplyCompleteColor(completed)
+		}
+		i++
+		fmt.Println(fmt.Sprintf("%s%s", indentStr, str))
 	}
 }
 
+// USE OrganisedContent type here
 func PresentItems(content string) {
 	scanner := bufio.NewScanner(strings.NewReader(content))
 	scanner.Split(bufio.ScanLines)
