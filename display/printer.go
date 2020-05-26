@@ -43,7 +43,6 @@ func PrintWithIndent(organisedContent *content.OrganisedContent) {
 	}
 }
 
-// USE OrganisedContent type here
 func PresentItems(organisedContent *content.OrganisedContent) {
 	i, beginNumbering, num := 0, 1, 1
 	for _, todo := range organisedContent.TODOs {
