@@ -167,16 +167,17 @@ func completeTodoAction(config *ToDoConfig) {
 	}
 
 	contents := manager.GetContent(config, file)
-
 	fmt.Println("")
-	display.PresentItems(contents)
+
+	organisedContent := content.NewOrganisedContent(contents)
+
+	display.PresentItems(organisedContent)
 	option := display.AcceptInput()
 	i, err := strconv.Atoi(option)
 	if err != nil {
 		panic(err)
 	}
 
-	organisedContent := content.NewOrganisedContent(contents)
 	organisedContent.CompleteTODO(i)
 	organisedContent.MergeContent()
 	manager.WriteUpdatedContent(file, len(contents), organisedContent.MergedContent)

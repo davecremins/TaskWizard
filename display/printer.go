@@ -3,10 +3,8 @@ package display
 import (
 	"bufio"
 	"fmt"
-	"log"
 	"os"
 	"strconv"
-	"strings"
 	"github.com/davecremins/ToDo-Manager/content"
 )
 
@@ -19,7 +17,6 @@ func init() {
 	}
 }
 
-// USE OrganisedContent type here
 func PrintWithIndent(organisedContent *content.OrganisedContent) {
 	i, str := 0, ""
 	for _, todo := range organisedContent.TODOs {
@@ -47,28 +44,17 @@ func PrintWithIndent(organisedContent *content.OrganisedContent) {
 }
 
 // USE OrganisedContent type here
-func PresentItems(content string) {
-	scanner := bufio.NewScanner(strings.NewReader(content))
-	scanner.Split(bufio.ScanLines)
+func PresentItems(organisedContent *content.OrganisedContent) {
 	i, beginNumbering, num := 0, 1, 1
-	for scanner.Scan() {
-		line := scanner.Text()
-		if len(line) == 0 {
-			break
-		}
-
+	for _, todo := range organisedContent.TODOs {
 		if i > beginNumbering {
-			s := fmt.Sprintf("%s%s) %s", indentStr, strconv.Itoa(num), line)
+			s := fmt.Sprintf("%s%s) %s", indentStr, strconv.Itoa(num), todo)
 			fmt.Println(ApplyTODOColor(s))
 			num++
 		} else {
-			fmt.Println(ApplyHeadingColor(indentStr + line))
+			fmt.Println(ApplyHeadingColor(indentStr + todo))
 		}
 		i++
-	}
-
-	if err := scanner.Err(); err != nil {
-		log.Fatal(err)
 	}
 }
 
