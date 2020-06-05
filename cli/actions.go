@@ -17,26 +17,41 @@ import (
 	"time"
 )
 
-type ConfigFunc func(*ToDoConfig)
+type ConfigFunc func([]string)
 
-func initActionMakeup(args []string, config *ToDoConfig) ConfigFunc {
+var FlagDefaults []func()
+
+func addFlagSetDefault(f func()) {
+	FlagDefaults = append(FlagDefaults, f)
+}
+
+func printDefaults() {
+	fmt.Println("")
+	for _, f := range FlagDefaults {
+		f()
+		fmt.Println("")
+	}
+}
+
+func initActionMakeup(config *ToDoConfig) ConfigFunc {
 	initCmd := flag.NewFlagSet("init", flag.ExitOnError)
 	filename := initCmd.String("filename", config.Filename, "Name of file to initialise")
-	action := func(config *ToDoConfig) {
+	action := func(args []string) {
 		initCmd.Parse(args[2:])
 		config.Filename = *filename
 		log.Println("Config over-written for init action")
 		initAction(config)
 	}
+	addFlagSetDefault(initCmd.Usage)
 	return action
 }
 
-func newDayActionMakeup(args []string, config *ToDoConfig) ConfigFunc {
+func newDayActionMakeup(config *ToDoConfig) ConfigFunc {
 	newDayCmd := flag.NewFlagSet("newday", flag.ExitOnError)
 	searchStr := newDayCmd.String("search", config.SearchStr, "Search string to look for")
 	daysToAdd := newDayCmd.Int("days", config.DaysToAdd, "Total amount of days to increment by")
 	filename := newDayCmd.String("filename", config.Filename, "Name of file to add new day to")
-	action := func(config *ToDoConfig) {
+	action := func(args []string) {
 		newDayCmd.Parse(args[2:])
 		config.SearchStr = *searchStr
 		config.DaysToAdd = *daysToAdd
@@ -44,42 +59,45 @@ func newDayActionMakeup(args []string, config *ToDoConfig) ConfigFunc {
 		log.Println("Config over-written for newday action")
 		newDayAction(config)
 	}
+	addFlagSetDefault(newDayCmd.Usage)
 	return action
 }
 
-func newTodoActionMakeup(args []string, config *ToDoConfig) ConfigFunc {
+func newTodoActionMakeup(config *ToDoConfig) ConfigFunc {
 	newTodoCmd := flag.NewFlagSet("newtodo", flag.ExitOnError)
 	searchStr := newTodoCmd.String("search", config.SearchStr, "Search string to look for")
 	filename := newTodoCmd.String("filename", config.Filename, "Name of file to add new todo")
 	todo := newTodoCmd.String("desc", "New todo item placeholder", "Description of new todo")
-	action := func(config *ToDoConfig) {
+	action := func(args []string) {
 		newTodoCmd.Parse(args[2:])
 		config.SearchStr = *searchStr
 		config.Filename = *filename
 		log.Println("Config over-written for newtodo action")
 		newTodoAction(config, *todo)
 	}
+	addFlagSetDefault(newTodoCmd.Usage)
 	return action
 }
 
-func todaysTodosActionMakeup(args []string, config *ToDoConfig) ConfigFunc {
+func todaysTodosActionMakeup(config *ToDoConfig) ConfigFunc {
 	todaysTodosCmd := flag.NewFlagSet("today", flag.ExitOnError)
 	searchStr := todaysTodosCmd.String("search", config.SearchStr, "Search string to look for")
 	filename := todaysTodosCmd.String("filename", config.Filename, "Name of file to search in")
-	action := func(config *ToDoConfig) {
+	action := func(args []string) {
 		todaysTodosCmd.Parse(args[2:])
 		config.SearchStr = *searchStr
 		config.Filename = *filename
 		log.Println("Config over-written for today action")
 		todaysTodosAction(config)
 	}
+	addFlagSetDefault(todaysTodosCmd.Usage)
 	return action
 
 }
 
-func completeTodoActionMakeup(args []string, config *ToDoConfig) ConfigFunc {
+func completeTodoActionMakeup(config *ToDoConfig) ConfigFunc {
 	flag.NewFlagSet("complete", flag.ExitOnError)
-	action := func(config *ToDoConfig) {
+	action := func(args []string) {
 		log.Println("Config not over-written for complete action")
 		completeTodoAction(config)
 	}

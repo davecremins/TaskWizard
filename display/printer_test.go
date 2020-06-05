@@ -1,8 +1,8 @@
 package display
 
 import (
-	"testing"
 	"github.com/davecremins/ToDo-Manager/content"
+	"testing"
 )
 
 func TestPrintWithIndent(t *testing.T) {
