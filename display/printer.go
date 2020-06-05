@@ -3,12 +3,13 @@ package display
 import (
 	"bufio"
 	"fmt"
+	"github.com/davecremins/ToDo-Manager/content"
 	"os"
 	"strconv"
-	"github.com/davecremins/ToDo-Manager/content"
 )
 
 const indentLevel = 8
+
 var indentStr string
 
 func init() {

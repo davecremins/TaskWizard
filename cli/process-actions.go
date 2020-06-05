@@ -1,29 +1,36 @@
 package actions
 
 import (
-	"flag"
+	"fmt"
 	. "github.com/davecremins/ToDo-Manager/config"
 	"log"
 )
 
 var actionMap map[string]ConfigFunc
 
-func Process(args []string, defaultConfig *ToDoConfig) {
-	if len(args) < 2 {
-		log.Fatal("expected subcommands to perform an action")
-	}
-
+func init() {
+	config := LoadConfig()
 	actionMap = make(map[string]ConfigFunc)
-	actionMap["init"] = initActionMakeup(args, defaultConfig)
-	actionMap["newday"] = newDayActionMakeup(args, defaultConfig)
-	actionMap["newtodo"] = newTodoActionMakeup(args, defaultConfig)
-	actionMap["today"] = todaysTodosActionMakeup(args, defaultConfig)
-	actionMap["complete"] = completeTodoActionMakeup(args, defaultConfig)
+	actionMap["init"] = initActionMakeup(config)
+	actionMap["newday"] = newDayActionMakeup(config)
+	actionMap["newtodo"] = newTodoActionMakeup(config)
+	actionMap["today"] = todaysTodosActionMakeup(config)
+	actionMap["complete"] = completeTodoActionMakeup(config)
+}
 
-	action, ok := actionMap[args[1]]
-	if !ok {
-		log.Fatal(args[1] + " subcommand is not supported right now :(")
-		flag.PrintDefaults()
+func Process(args []string) {
+	if len(args) < 2 {
+		log.Println("No command provided, printing default usage instead")
+		printDefaults()
+	} else {
+
+		action, ok := actionMap[args[1]]
+		if !ok {
+			msg := fmt.Sprintf("Command '%s' not supported, printing default usage instead", args[1])
+			log.Println(msg)
+			printDefaults()
+		} else {
+			action(args)
+		}
 	}
-	action(defaultConfig)
 }
