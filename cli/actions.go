@@ -96,11 +96,12 @@ func todaysTodosActionMakeup(config *ToDoConfig) ConfigFunc {
 }
 
 func completeTodoActionMakeup(config *ToDoConfig) ConfigFunc {
-	flag.NewFlagSet("complete", flag.ExitOnError)
+	completeCmd := flag.NewFlagSet("complete", flag.ExitOnError)
 	action := func(args []string) {
 		log.Println("Config not over-written for complete action")
 		completeTodoAction(config)
 	}
+	addFlagSetDefault(completeCmd.Usage)
 	return action
 }
 
