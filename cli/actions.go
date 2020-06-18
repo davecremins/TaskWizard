@@ -105,6 +105,16 @@ func completeTodoActionMakeup(config *ToDoConfig) ConfigFunc {
 	return action
 }
 
+func moveTodoActionMakeup(config *ToDoConfig) ConfigFunc {
+	moveCmd := flag.NewFlagSet("move", flag.ExitOnError)
+	action := func(args []string) {
+		log.Println("Config not over-written for move action")
+		moveTodoAction(config)
+	}
+	addFlagSetDefault(moveCmd.Usage)
+	return action
+}
+
 func initAction(config *ToDoConfig) {
 	initContent := content.GetInitContentWithPlaceholders()
 	formattedDate := dates.ExtractShortDate(time.Now())
@@ -191,13 +201,44 @@ func completeTodoAction(config *ToDoConfig) {
 	organisedContent := content.NewOrganisedContent(contents)
 
 	display.PresentItems(organisedContent)
-	option := display.AcceptInput()
-	i, err := strconv.Atoi(option)
+	response := display.AcceptInput("Enter TODO number for completion: ")
+	i, err := strconv.Atoi(response)
 	if err != nil {
 		panic(err)
 	}
 
 	organisedContent.CompleteTODO(i)
+	organisedContent.MergeContent()
+	manager.WriteUpdatedContent(file, len(contents), organisedContent.MergedContent)
+	log.Println("Updated content written to file successfully")
+}
+
+func moveTodoAction(config *ToDoConfig) {
+	file, err := os.OpenFile(config.Filename, os.O_RDWR, 0666)
+	defer file.Close()
+
+	if err != nil {
+		log.Fatalf("failed opening file: %s", err)
+	}
+
+	contents := manager.GetContent(config, file)
+	fmt.Println("")
+
+	organisedContent := content.NewOrganisedContent(contents)
+
+	display.PresentItems(organisedContent)
+	response := display.AcceptInput("Enter TODO number for move followed by number for new position: ")
+	entries := strings.Fields(response)
+	item, err := strconv.Atoi(entries[0])
+	if err != nil {
+		panic(err)
+	}
+	newPosition, err := strconv.Atoi(entries[1])
+	if err != nil {
+		panic(err)
+	}
+
+	organisedContent.MoveTODO(item, newPosition)
 	organisedContent.MergeContent()
 	manager.WriteUpdatedContent(file, len(contents), organisedContent.MergedContent)
 	log.Println("Updated content written to file successfully")

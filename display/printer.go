@@ -58,10 +58,10 @@ func PresentItems(organisedContent *content.OrganisedContent) {
 	}
 }
 
-func AcceptInput() string {
+func AcceptInput(prompt string) string {
 	fmt.Println("")
 	scanner := bufio.NewScanner(os.Stdin)
-	fmt.Printf("%sEnter TODO number for completion: ", indentStr)
+	fmt.Printf("%s%s", indentStr, prompt)
 	scanner.Scan()
 	text := scanner.Text()
 	return text

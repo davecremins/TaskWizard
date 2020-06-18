@@ -16,6 +16,7 @@ func init() {
 	actionMap["newtodo"] = newTodoActionMakeup(config)
 	actionMap["today"] = todaysTodosActionMakeup(config)
 	actionMap["complete"] = completeTodoActionMakeup(config)
+	actionMap["move"] = moveTodoActionMakeup(config)
 }
 
 func Process(args []string) {
