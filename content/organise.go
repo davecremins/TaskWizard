@@ -76,3 +76,33 @@ func (c *OrganisedContent) CompleteTODO(todoPos int) {
 	c.Completed = append(c.Completed, todo)
 	c.TODOs = append(c.TODOs[:realIndex], c.TODOs[realIndex+1:]...)
 }
+
+func (c *OrganisedContent) MoveTODO(todoPos, newPosition int) {
+	lengthIgnoringHeadings := len(c.TODOs) - 2
+	if lengthIgnoringHeadings == 0 {
+		panic("No TODOs to move")
+	}
+
+	if todoPos == newPosition {
+		return
+	}
+
+	if todoPos > lengthIgnoringHeadings || todoPos <= 0 {
+		panic("TODO item number is out of bounds")
+	}
+
+	if newPosition > lengthIgnoringHeadings || newPosition <= 0 {
+		panic("New position for TODO item is out of bounds")
+	}
+
+	// Account for headings
+	realIndex := todoPos + 1
+	todo := c.TODOs[realIndex]
+	copy(c.TODOs[realIndex:], c.TODOs[realIndex+1:])
+	c.TODOs[len(c.TODOs)-1] = ""
+	c.TODOs = c.TODOs[:len(c.TODOs)-1]
+	realIndexForNewPosition := newPosition + 1
+	c.TODOs = append(c.TODOs, "")
+	copy(c.TODOs[realIndexForNewPosition+1:], c.TODOs[realIndexForNewPosition:])
+	c.TODOs[realIndexForNewPosition] = todo
+}
