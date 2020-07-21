@@ -17,6 +17,7 @@ func init() {
 	actionMap["today"] = todaysTodosActionMakeup(config)
 	actionMap["complete"] = completeTodoActionMakeup(config)
 	actionMap["move"] = moveTodoActionMakeup(config)
+	actionMap["merge"] = mergeTodoActionMakeup(config)
 }
 
 func Process(args []string) {

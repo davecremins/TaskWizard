@@ -115,6 +115,16 @@ func moveTodoActionMakeup(config *ToDoConfig) ConfigFunc {
 	return action
 }
 
+func mergeTodoActionMakeup(config *ToDoConfig) ConfigFunc {
+	mergeCmd := flag.NewFlagSet("merge", flag.ExitOnError)
+	action := func(args []string) {
+		log.Println("Config not over-written for move action")
+		mergeTodoAction(config)
+	}
+	addFlagSetDefault(mergeCmd.Usage)
+	return action
+}
+
 func initAction(config *ToDoConfig) {
 	initContent := content.GetInitContentWithPlaceholders()
 	formattedDate := dates.ExtractShortDate(time.Now())
@@ -239,6 +249,37 @@ func moveTodoAction(config *ToDoConfig) {
 	}
 
 	organisedContent.MoveTODO(item, newPosition)
+	organisedContent.MergeContent()
+	manager.WriteUpdatedContent(file, len(contents), organisedContent.MergedContent)
+	log.Println("Updated content written to file successfully")
+}
+
+func mergeTodoAction(config *ToDoConfig) {
+	file, err := os.OpenFile(config.Filename, os.O_RDWR, 0666)
+	defer file.Close()
+
+	if err != nil {
+		log.Fatalf("failed opening file: %s", err)
+	}
+
+	contents := manager.GetContent(config, file)
+	fmt.Println("")
+
+	organisedContent := content.NewOrganisedContent(contents)
+
+	display.PresentItems(organisedContent)
+	response := display.AcceptInput("Enter TODO number for merge followed by TODO number to merge with: ")
+	entries := strings.Fields(response)
+	item, err := strconv.Atoi(entries[0])
+	if err != nil {
+		panic(err)
+	}
+	mergeWith, err := strconv.Atoi(entries[1])
+	if err != nil {
+		panic(err)
+	}
+
+	organisedContent.MergeTODOs(item, mergeWith)
 	organisedContent.MergeContent()
 	manager.WriteUpdatedContent(file, len(contents), organisedContent.MergedContent)
 	log.Println("Updated content written to file successfully")

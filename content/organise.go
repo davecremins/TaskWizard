@@ -2,6 +2,7 @@ package content
 
 import (
 	"bufio"
+	"fmt"
 	"strings"
 )
 
@@ -105,4 +106,32 @@ func (c *OrganisedContent) MoveTODO(todoPos, newPosition int) {
 	c.TODOs = append(c.TODOs, "")
 	copy(c.TODOs[realIndexForNewPosition+1:], c.TODOs[realIndexForNewPosition:])
 	c.TODOs[realIndexForNewPosition] = todo
+}
+
+func (c *OrganisedContent) MergeTODOs(thisTodo, withThatTodo int) {
+	lengthIgnoringHeadings := len(c.TODOs) - 2
+	if lengthIgnoringHeadings == 0 {
+		panic("No TODOs to merge")
+	}
+
+	if thisTodo == withThatTodo {
+		return
+	}
+
+	if thisTodo > lengthIgnoringHeadings || thisTodo <= 0 {
+		panic("TODO item number is out of bounds")
+	}
+
+	if withThatTodo > lengthIgnoringHeadings || withThatTodo <= 0 {
+		panic("New position for TODO item is out of bounds")
+	}
+
+	// Account for headings
+	realIndexForThisToDo := thisTodo + 1
+	todoToMerge := c.TODOs[realIndexForThisToDo]
+
+	realIndexForWithThatTodo := withThatTodo + 1
+	todoToMergeWith := c.TODOs[realIndexForWithThatTodo]
+	c.TODOs[realIndexForWithThatTodo] = fmt.Sprintf("%s%s%s", todoToMergeWith, " - ", todoToMerge)
+	c.TODOs = append(c.TODOs[:realIndexForThisToDo], c.TODOs[realIndexForThisToDo+1:]...)
 }
