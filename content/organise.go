@@ -62,7 +62,7 @@ func (c *OrganisedContent) MergeContent() {
 	c.MergedContent = sb.String()
 }
 
-func (c *OrganisedContent) CompleteTODO(todoPos int) {
+func (c *OrganisedContent) CompleteTODO(todoPos int, edit string) {
 	lengthIgnoringHeadings := len(c.TODOs) - 2
 	if lengthIgnoringHeadings == 0 {
 		panic("No TODO to complete")
@@ -74,6 +74,9 @@ func (c *OrganisedContent) CompleteTODO(todoPos int) {
 	// Account for headings
 	realIndex := todoPos + 1
 	todo := c.TODOs[realIndex]
+	if len(edit) > 0 {
+		todo = fmt.Sprintf("%s%s%s", todo, " - ", edit)
+	}
 	c.Completed = append(c.Completed, todo)
 	c.TODOs = append(c.TODOs[:realIndex], c.TODOs[realIndex+1:]...)
 }

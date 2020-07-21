@@ -97,9 +97,12 @@ func todaysTodosActionMakeup(config *ToDoConfig) ConfigFunc {
 
 func completeTodoActionMakeup(config *ToDoConfig) ConfigFunc {
 	completeCmd := flag.NewFlagSet("complete", flag.ExitOnError)
+	includeEdit := completeCmd.Bool("edit", false, "Option to edit todo item before completion")
 	action := func(args []string) {
+		completeCmd.Parse(args[2:])
 		log.Println("Config not over-written for complete action")
-		completeTodoAction(config)
+		log.Println("Specific complete cmd flag included", *includeEdit)
+		completeTodoAction(config, *includeEdit)
 	}
 	addFlagSetDefault(completeCmd.Usage)
 	return action
@@ -197,7 +200,7 @@ func todaysTodosAction(config *ToDoConfig) {
 	fmt.Println("")
 }
 
-func completeTodoAction(config *ToDoConfig) {
+func completeTodoAction(config *ToDoConfig, includeEdit bool) {
 	file, err := os.OpenFile(config.Filename, os.O_RDWR, 0666)
 	defer file.Close()
 
@@ -217,7 +220,12 @@ func completeTodoAction(config *ToDoConfig) {
 		panic(err)
 	}
 
-	organisedContent.CompleteTODO(i)
+	var edit string = ""
+	if includeEdit {
+		edit = display.AcceptInput("Enter edition: ")
+	}
+
+	organisedContent.CompleteTODO(i, edit)
 	organisedContent.MergeContent()
 	manager.WriteUpdatedContent(file, len(contents), organisedContent.MergedContent)
 	log.Println("Updated content written to file successfully")
