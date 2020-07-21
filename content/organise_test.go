@@ -107,7 +107,36 @@ Finished a book
 Do Something in the evening`
 
 	organisedContent := NewOrganisedContent(content)
-	organisedContent.CompleteTODO(1)
+	organisedContent.CompleteTODO(1, "")
+	organisedContent.MergeContent()
+
+	if want != organisedContent.MergedContent {
+		t.Errorf("Merged content is incorrect got %s, want %s", organisedContent.MergedContent, want)
+		t.Logf("Size of got %d and want %d", len(organisedContent.MergedContent), len(want))
+	}
+}
+
+func TestMoveTODOToCompletedWithEdition(t *testing.T) {
+	content := `TODOs 13/01/2020
+================
+Do Something in the evening
+Write some code
+
+Completed 13/01/2020
+====================
+Finished a book`
+
+	want := `TODOs 13/01/2020
+================
+Write some code
+
+Completed 13/01/2020
+====================
+Finished a book
+Do Something in the evening - Went for a walk`
+
+	organisedContent := NewOrganisedContent(content)
+	organisedContent.CompleteTODO(1, "Went for a walk")
 	organisedContent.MergeContent()
 
 	if want != organisedContent.MergedContent {
@@ -134,7 +163,7 @@ Finished a book`
 		t.Log(r)
 	}()
 	organisedContent := NewOrganisedContent(content)
-	organisedContent.CompleteTODO(5)
+	organisedContent.CompleteTODO(5, "")
 }
 
 func TestMoveTODOItemToNewPositionInTODOItems(t *testing.T) {
@@ -383,4 +412,3 @@ Finished a book`
 	organisedContent := NewOrganisedContent(content)
 	organisedContent.MergeTODOs(1, -3)
 }
-
