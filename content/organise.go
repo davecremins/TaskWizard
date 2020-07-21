@@ -108,30 +108,30 @@ func (c *OrganisedContent) MoveTODO(todoPos, newPosition int) {
 	c.TODOs[realIndexForNewPosition] = todo
 }
 
-func (c *OrganisedContent) MergeTODOs(thisTodo, withThatTodo int) {
+func (c *OrganisedContent) MergeTODOs(todoForMerge, todoToMergeWith int) {
 	lengthIgnoringHeadings := len(c.TODOs) - 2
 	if lengthIgnoringHeadings == 0 {
 		panic("No TODOs to merge")
 	}
 
-	if thisTodo == withThatTodo {
+	if todoForMerge == todoToMergeWith {
 		return
 	}
 
-	if thisTodo > lengthIgnoringHeadings || thisTodo <= 0 {
+	if todoForMerge > lengthIgnoringHeadings || todoForMerge <= 0 {
 		panic("TODO item number is out of bounds")
 	}
 
-	if withThatTodo > lengthIgnoringHeadings || withThatTodo <= 0 {
+	if todoToMergeWith > lengthIgnoringHeadings || todoToMergeWith <= 0 {
 		panic("New position for TODO item is out of bounds")
 	}
 
 	// Account for headings
-	realIndexForThisToDo := thisTodo + 1
-	todoToMerge := c.TODOs[realIndexForThisToDo]
+	realIndexForTodoForMerge := todoForMerge + 1
+	todoToMergeStr := c.TODOs[realIndexForTodoForMerge]
 
-	realIndexForWithThatTodo := withThatTodo + 1
-	todoToMergeWith := c.TODOs[realIndexForWithThatTodo]
-	c.TODOs[realIndexForWithThatTodo] = fmt.Sprintf("%s%s%s", todoToMergeWith, " - ", todoToMerge)
-	c.TODOs = append(c.TODOs[:realIndexForThisToDo], c.TODOs[realIndexForThisToDo+1:]...)
+	realIndexForTodoToMergeWith := todoToMergeWith + 1
+	todoToMergeWithStr := c.TODOs[realIndexForTodoToMergeWith]
+	c.TODOs[realIndexForTodoToMergeWith] = fmt.Sprintf("%s%s%s", todoToMergeWithStr, " - ", todoToMergeStr)
+	c.TODOs = append(c.TODOs[:realIndexForTodoForMerge], c.TODOs[realIndexForTodoForMerge+1:]...)
 }
