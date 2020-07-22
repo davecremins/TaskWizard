@@ -8,7 +8,6 @@ import (
 	"github.com/davecremins/ToDo-Manager/content"
 	"github.com/davecremins/ToDo-Manager/dates"
 	"github.com/davecremins/ToDo-Manager/display"
-	"github.com/davecremins/ToDo-Manager/manager"
 	"io/ioutil"
 	"log"
 	"os"
@@ -147,8 +146,26 @@ func newDayAction(config *ToDoConfig) {
 		log.Fatalf("failed opening file: %s", err)
 	}
 
-	content := manager.GetContent(config, file)
-	newContent := manager.ChangeDate(config, content)
+	stats, _ := file.Stat()
+	size := stats.Size()
+	log.Println("Size of file:", size)
+
+	contentContainingStr := content.FindSearchStr(file, size, config.SearchStr)
+	dateStr, err := dates.FindDate(contentContainingStr)
+	if err != nil {
+		panic("Failed to find date in content")
+	}
+
+	datetime, err := dates.ConvertToTime(dateStr)
+	if err != nil {
+		panic("Failed to convert date to time format")
+	}
+
+	datetime = dates.AddDays(datetime, config.DaysToAdd)
+	newDateStr := dates.ExtractShortDate(datetime)
+	newContent := strings.ReplaceAll(contentContainingStr, dateStr, newDateStr)
+	log.Println("Content updated with new date")
+
 	scanner := bufio.NewScanner(strings.NewReader(newContent))
 	scanner.Split(bufio.ScanLines)
 	strFound := false
@@ -168,7 +185,16 @@ func newDayAction(config *ToDoConfig) {
 		}
 	}
 
-	manager.WriteContent(file, strings.Join(take, "\n"))
+	file.Seek(0, 2)
+	_, err = file.Write([]byte("\n\n"))
+	if err != nil {
+		panic("Falied to write newlines to file")
+	}
+
+	_, err = file.Write([]byte(strings.Join(take, "\n")))
+	if err != nil {
+		panic("Falied to write new content to file")
+	}
 	log.Println("New day todos copied successfully")
 }
 
@@ -180,7 +206,32 @@ func newTodoAction(config *ToDoConfig, todo string) {
 		log.Fatalf("failed opening file: %s", err)
 	}
 
-	manager.AddNewItem(config, file, todo)
+	stats, _ := file.Stat()
+	size := stats.Size()
+	log.Println("Size of file:", size)
+
+	contentContainingStr := content.FindSearchStr(file, size, "Completed")
+	contentSize := len(contentContainingStr)
+	log.Println("Position found:", contentSize)
+	// Account for newline
+	contentSize += 1
+
+	writingPos := size - int64(contentSize)
+	file.Seek(writingPos, 0)
+	_, err = file.Write([]byte(todo))
+	if err != nil {
+		panic("Falied to write new item to file")
+	}
+
+	_, err = file.Write([]byte("\n\n"))
+	if err != nil {
+		panic("Falied to write new line to file")
+	}
+
+	_, err = file.Write([]byte(contentContainingStr))
+	if err != nil {
+		panic("Falied to write original content to file")
+	}
 	log.Println("New todo item added successfully")
 }
 
@@ -192,8 +243,12 @@ func todaysTodosAction(config *ToDoConfig) {
 		log.Fatalf("failed opening file: %s", err)
 	}
 
-	contents := manager.GetContent(config, file)
-	organisedContent := content.NewOrganisedContent(contents)
+	stats, _ := file.Stat()
+	size := stats.Size()
+	log.Println("Size of file:", size)
+
+	contentContainingStr := content.FindSearchStr(file, size, config.SearchStr)
+	organisedContent := content.NewOrganisedContent(contentContainingStr)
 
 	fmt.Println("")
 	display.PrintWithIndent(organisedContent)
@@ -208,10 +263,13 @@ func completeTodoAction(config *ToDoConfig, includeEdit bool) {
 		log.Fatalf("failed opening file: %s", err)
 	}
 
-	contents := manager.GetContent(config, file)
-	fmt.Println("")
+	stats, _ := file.Stat()
+	size := stats.Size()
+	log.Println("Size of file:", size)
 
-	organisedContent := content.NewOrganisedContent(contents)
+	contentContainingStr := content.FindSearchStr(file, size, config.SearchStr)
+	fmt.Println("")
+	organisedContent := content.NewOrganisedContent(contentContainingStr)
 
 	display.PresentItems(organisedContent)
 	response := display.AcceptInput("Enter TODO number for completion: ")
@@ -227,7 +285,13 @@ func completeTodoAction(config *ToDoConfig, includeEdit bool) {
 
 	organisedContent.CompleteTODO(i, edit)
 	organisedContent.MergeContent()
-	manager.WriteUpdatedContent(file, len(contents), organisedContent.MergedContent)
+
+	writingPos := size - int64(len(contentContainingStr))
+	file.Seek(writingPos, 0)
+	_, err = file.Write([]byte(organisedContent.MergedContent))
+	if err != nil {
+		panic("Falied to write updated content to file")
+	}
 	log.Println("Updated content written to file successfully")
 }
 
@@ -239,10 +303,13 @@ func moveTodoAction(config *ToDoConfig) {
 		log.Fatalf("failed opening file: %s", err)
 	}
 
-	contents := manager.GetContent(config, file)
-	fmt.Println("")
+	stats, _ := file.Stat()
+	size := stats.Size()
+	log.Println("Size of file:", size)
 
-	organisedContent := content.NewOrganisedContent(contents)
+	contentContainingStr := content.FindSearchStr(file, size, config.SearchStr)
+	fmt.Println("")
+	organisedContent := content.NewOrganisedContent(contentContainingStr)
 
 	display.PresentItems(organisedContent)
 	response := display.AcceptInput("Enter TODO number for move followed by number for new position: ")
@@ -258,7 +325,13 @@ func moveTodoAction(config *ToDoConfig) {
 
 	organisedContent.MoveTODO(item, newPosition)
 	organisedContent.MergeContent()
-	manager.WriteUpdatedContent(file, len(contents), organisedContent.MergedContent)
+
+	writingPos := size - int64(len(contentContainingStr))
+	file.Seek(writingPos, 0)
+	_, err = file.Write([]byte(organisedContent.MergedContent))
+	if err != nil {
+		panic("Falied to write updated content to file")
+	}
 	log.Println("Updated content written to file successfully")
 }
 
@@ -270,10 +343,13 @@ func mergeTodoAction(config *ToDoConfig) {
 		log.Fatalf("failed opening file: %s", err)
 	}
 
-	contents := manager.GetContent(config, file)
-	fmt.Println("")
+	stats, _ := file.Stat()
+	size := stats.Size()
+	log.Println("Size of file:", size)
 
-	organisedContent := content.NewOrganisedContent(contents)
+	contentContainingStr := content.FindSearchStr(file, size, config.SearchStr)
+	fmt.Println("")
+	organisedContent := content.NewOrganisedContent(contentContainingStr)
 
 	display.PresentItems(organisedContent)
 	response := display.AcceptInput("Enter TODO number for merge followed by TODO number to merge with: ")
@@ -289,6 +365,12 @@ func mergeTodoAction(config *ToDoConfig) {
 
 	organisedContent.MergeTODOs(item, mergeWith)
 	organisedContent.MergeContent()
-	manager.WriteUpdatedContent(file, len(contents), organisedContent.MergedContent)
+
+	writingPos := size - int64(len(contentContainingStr))
+	file.Seek(writingPos, 0)
+	_, err = file.Write([]byte(organisedContent.MergedContent))
+	if err != nil {
+		panic("Falied to write updated content to file")
+	}
 	log.Println("Updated content written to file successfully")
 }

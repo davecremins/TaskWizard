@@ -1,20 +1,24 @@
 package content
 
 import (
-	"os"
 	"strings"
 )
+
+type ContentOperator interface {
+	Seek(offset int64, whence int) (int64, error)
+	Read(b []byte) (int, error)
+}
 
 const (
 	bufferSize = 1024
 	SAFE_LOOP  = 10
 )
 
-func FindSearchStr(contents *os.File, size int64, searchStr string) string {
+func FindSearchStr(contents ContentOperator, size int64, searchStr string) string {
 	return bottomUpSearch(contents, size, searchStr)
 }
 
-func bottomUpSearch(contents *os.File, size int64, searchStr string) string {
+func bottomUpSearch(contents ContentOperator, size int64, searchStr string) string {
 	i := 0
 	bufSize := int64(bufferSize)
 	if size < bufSize {
