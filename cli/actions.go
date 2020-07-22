@@ -277,7 +277,13 @@ func completeTodoAction(config *ToDoConfig, includeEdit bool) {
 
 	organisedContent.CompleteTODO(i, edit)
 	organisedContent.MergeContent()
-	manager.WriteUpdatedContent(file, len(contentContainingStr), organisedContent.MergedContent)
+
+	writingPos := size - int64(len(contentContainingStr))
+	file.Seek(writingPos, 0)
+	_, err = file.Write([]byte(organisedContent.MergedContent))
+	if err != nil {
+		panic("Falied to write updated content to file")
+	}
 	log.Println("Updated content written to file successfully")
 }
 
@@ -311,7 +317,13 @@ func moveTodoAction(config *ToDoConfig) {
 
 	organisedContent.MoveTODO(item, newPosition)
 	organisedContent.MergeContent()
-	manager.WriteUpdatedContent(file, len(contentContainingStr), organisedContent.MergedContent)
+
+	writingPos := size - int64(len(contentContainingStr))
+	file.Seek(writingPos, 0)
+	_, err = file.Write([]byte(organisedContent.MergedContent))
+	if err != nil {
+		panic("Falied to write updated content to file")
+	}
 	log.Println("Updated content written to file successfully")
 }
 
@@ -345,6 +357,12 @@ func mergeTodoAction(config *ToDoConfig) {
 
 	organisedContent.MergeTODOs(item, mergeWith)
 	organisedContent.MergeContent()
-	manager.WriteUpdatedContent(file, len(contentContainingStr), organisedContent.MergedContent)
+
+	writingPos := size - int64(len(contentContainingStr))
+	file.Seek(writingPos, 0)
+	_, err = file.Write([]byte(organisedContent.MergedContent))
+	if err != nil {
+		panic("Falied to write updated content to file")
+	}
 	log.Println("Updated content written to file successfully")
 }
