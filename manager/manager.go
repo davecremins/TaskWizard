@@ -9,15 +9,6 @@ import (
 	"strings"
 )
 
-func GetContent(config *ToDoConfig, file *os.File) string {
-	stats, _ := file.Stat()
-	size := stats.Size()
-	log.Println("Size of file:", size)
-
-	contentContainingStr := content.FindSearchStr(file, size, config.SearchStr)
-	return contentContainingStr
-}
-
 func AddNewItem(config *ToDoConfig, file *os.File, newItem string) {
 	stats, _ := file.Stat()
 	size := stats.Size()

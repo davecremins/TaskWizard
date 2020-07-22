@@ -147,8 +147,12 @@ func newDayAction(config *ToDoConfig) {
 		log.Fatalf("failed opening file: %s", err)
 	}
 
-	content := manager.GetContent(config, file)
-	newContent := manager.ChangeDate(config, content)
+	stats, _ := file.Stat()
+	size := stats.Size()
+	log.Println("Size of file:", size)
+
+	contentContainingStr := content.FindSearchStr(file, size, config.SearchStr)
+	newContent := manager.ChangeDate(config, contentContainingStr)
 	scanner := bufio.NewScanner(strings.NewReader(newContent))
 	scanner.Split(bufio.ScanLines)
 	strFound := false
@@ -192,8 +196,12 @@ func todaysTodosAction(config *ToDoConfig) {
 		log.Fatalf("failed opening file: %s", err)
 	}
 
-	contents := manager.GetContent(config, file)
-	organisedContent := content.NewOrganisedContent(contents)
+	stats, _ := file.Stat()
+	size := stats.Size()
+	log.Println("Size of file:", size)
+
+	contentContainingStr := content.FindSearchStr(file, size, config.SearchStr)
+	organisedContent := content.NewOrganisedContent(contentContainingStr)
 
 	fmt.Println("")
 	display.PrintWithIndent(organisedContent)
@@ -208,10 +216,13 @@ func completeTodoAction(config *ToDoConfig, includeEdit bool) {
 		log.Fatalf("failed opening file: %s", err)
 	}
 
-	contents := manager.GetContent(config, file)
-	fmt.Println("")
+	stats, _ := file.Stat()
+	size := stats.Size()
+	log.Println("Size of file:", size)
 
-	organisedContent := content.NewOrganisedContent(contents)
+	contentContainingStr := content.FindSearchStr(file, size, config.SearchStr)
+	fmt.Println("")
+	organisedContent := content.NewOrganisedContent(contentContainingStr)
 
 	display.PresentItems(organisedContent)
 	response := display.AcceptInput("Enter TODO number for completion: ")
@@ -227,7 +238,7 @@ func completeTodoAction(config *ToDoConfig, includeEdit bool) {
 
 	organisedContent.CompleteTODO(i, edit)
 	organisedContent.MergeContent()
-	manager.WriteUpdatedContent(file, len(contents), organisedContent.MergedContent)
+	manager.WriteUpdatedContent(file, len(contentContainingStr), organisedContent.MergedContent)
 	log.Println("Updated content written to file successfully")
 }
 
@@ -239,10 +250,13 @@ func moveTodoAction(config *ToDoConfig) {
 		log.Fatalf("failed opening file: %s", err)
 	}
 
-	contents := manager.GetContent(config, file)
-	fmt.Println("")
+	stats, _ := file.Stat()
+	size := stats.Size()
+	log.Println("Size of file:", size)
 
-	organisedContent := content.NewOrganisedContent(contents)
+	contentContainingStr := content.FindSearchStr(file, size, config.SearchStr)
+	fmt.Println("")
+	organisedContent := content.NewOrganisedContent(contentContainingStr)
 
 	display.PresentItems(organisedContent)
 	response := display.AcceptInput("Enter TODO number for move followed by number for new position: ")
@@ -258,7 +272,7 @@ func moveTodoAction(config *ToDoConfig) {
 
 	organisedContent.MoveTODO(item, newPosition)
 	organisedContent.MergeContent()
-	manager.WriteUpdatedContent(file, len(contents), organisedContent.MergedContent)
+	manager.WriteUpdatedContent(file, len(contentContainingStr), organisedContent.MergedContent)
 	log.Println("Updated content written to file successfully")
 }
 
@@ -270,10 +284,13 @@ func mergeTodoAction(config *ToDoConfig) {
 		log.Fatalf("failed opening file: %s", err)
 	}
 
-	contents := manager.GetContent(config, file)
-	fmt.Println("")
+	stats, _ := file.Stat()
+	size := stats.Size()
+	log.Println("Size of file:", size)
 
-	organisedContent := content.NewOrganisedContent(contents)
+	contentContainingStr := content.FindSearchStr(file, size, config.SearchStr)
+	fmt.Println("")
+	organisedContent := content.NewOrganisedContent(contentContainingStr)
 
 	display.PresentItems(organisedContent)
 	response := display.AcceptInput("Enter TODO number for merge followed by TODO number to merge with: ")
@@ -289,6 +306,6 @@ func mergeTodoAction(config *ToDoConfig) {
 
 	organisedContent.MergeTODOs(item, mergeWith)
 	organisedContent.MergeContent()
-	manager.WriteUpdatedContent(file, len(contents), organisedContent.MergedContent)
+	manager.WriteUpdatedContent(file, len(contentContainingStr), organisedContent.MergedContent)
 	log.Println("Updated content written to file successfully")
 }
