@@ -8,7 +8,6 @@ import (
 	"github.com/davecremins/ToDo-Manager/content"
 	"github.com/davecremins/ToDo-Manager/dates"
 	"github.com/davecremins/ToDo-Manager/display"
-	"github.com/davecremins/ToDo-Manager/manager"
 	"io/ioutil"
 	"log"
 	"os"
@@ -186,7 +185,16 @@ func newDayAction(config *ToDoConfig) {
 		}
 	}
 
-	manager.WriteContent(file, strings.Join(take, "\n"))
+	file.Seek(0, 2)
+	_, err = file.Write([]byte("\n\n"))
+	if err != nil {
+		panic("Falied to write newlines to file")
+	}
+
+	_, err = file.Write([]byte(strings.Join(take, "\n")))
+	if err != nil {
+		panic("Falied to write new content to file")
+	}
 	log.Println("New day todos copied successfully")
 }
 
