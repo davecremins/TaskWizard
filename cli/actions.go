@@ -184,7 +184,32 @@ func newTodoAction(config *ToDoConfig, todo string) {
 		log.Fatalf("failed opening file: %s", err)
 	}
 
-	manager.AddNewItem(config, file, todo)
+	stats, _ := file.Stat()
+	size := stats.Size()
+	log.Println("Size of file:", size)
+
+	contentContainingStr := content.FindSearchStr(file, size, "Completed")
+	contentSize := len(contentContainingStr)
+	log.Println("Position found:", contentSize)
+	// Account for newline
+	contentSize += 1
+
+	writingPos := size - int64(contentSize)
+	file.Seek(writingPos, 0)
+	_, err = file.Write([]byte(todo))
+	if err != nil {
+		panic("Falied to write new item to file")
+	}
+
+	_, err = file.Write([]byte("\n\n"))
+	if err != nil {
+		panic("Falied to write new line to file")
+	}
+
+	_, err = file.Write([]byte(contentContainingStr))
+	if err != nil {
+		panic("Falied to write original content to file")
+	}
 	log.Println("New todo item added successfully")
 }
 
