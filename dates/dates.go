@@ -47,6 +47,10 @@ func AddDays(t time.Time, days int) time.Time {
 	return t.AddDate(0, 0, days)
 }
 
+func Today() time.Time {
+	return time.Now()
+}
+
 func reverse(values []string) {
 	for i, j := 0, len(values)-1; i < j; i, j = i+1, j-1 {
 		values[i], values[j] = values[j], values[i]
