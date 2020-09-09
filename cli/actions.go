@@ -258,7 +258,7 @@ func todaysTodosAction(config *ToDoConfig) {
 	organisedContent := content.NewOrganisedContent(contentContainingStr)
 
 	fmt.Println("")
-	display.PrintWithIndent(organisedContent)
+	display.PrintWithIndent(organisedContent, content.ALL)
 	fmt.Println("")
 }
 
@@ -278,7 +278,7 @@ func completeTodoAction(config *ToDoConfig, includeEdit bool) {
 	fmt.Println("")
 	organisedContent := content.NewOrganisedContent(contentContainingStr)
 
-	display.PresentItems(organisedContent)
+	display.PrintWithIndent(organisedContent, content.TODOS)
 	response := display.AcceptInput("Enter TODO number for completion: ")
 	i, err := strconv.Atoi(response)
 	if err != nil {
@@ -318,7 +318,7 @@ func moveTodoAction(config *ToDoConfig) {
 	fmt.Println("")
 	organisedContent := content.NewOrganisedContent(contentContainingStr)
 
-	display.PresentItems(organisedContent)
+	display.PrintWithIndent(organisedContent, content.TODOS)
 	response := display.AcceptInput("Enter TODO number for move followed by number for new position: ")
 	entries := strings.Fields(response)
 	item, err := strconv.Atoi(entries[0])
@@ -358,7 +358,7 @@ func mergeTodoAction(config *ToDoConfig) {
 	fmt.Println("")
 	organisedContent := content.NewOrganisedContent(contentContainingStr)
 
-	display.PresentItems(organisedContent)
+	display.PrintWithIndent(organisedContent, content.TODOS)
 	response := display.AcceptInput("Enter TODO number for merge followed by TODO number to merge with: ")
 	entries := strings.Fields(response)
 	item, err := strconv.Atoi(entries[0])
