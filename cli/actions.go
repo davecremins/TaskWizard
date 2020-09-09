@@ -151,16 +151,16 @@ func newDayAction(config *ToDoConfig) {
 	log.Println("Size of file:", size)
 
 	contentContainingStr := content.FindSearchStr(file, size, config.SearchStr)
+	dateStr, err := dates.FindDate(contentContainingStr)
+	if err != nil {
+		panic("Failed to find date in content")
+	}
 
 	var datetime time.Time
 
 	if config.UseTodayForNewDay {
 		datetime = dates.Today()
 	} else {
-		dateStr, err := dates.FindDate(contentContainingStr)
-		if err != nil {
-			panic("Failed to find date in content")
-		}
 
 		datetime, err = dates.ConvertToTime(dateStr)
 		if err != nil {

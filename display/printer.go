@@ -19,34 +19,32 @@ func init() {
 }
 
 func PrintWithIndent(organisedContent *content.OrganisedContent) {
-	i, str := 0, ""
-	for _, todo := range organisedContent.TODOs {
-		if i <= 1 {
-			str = ApplyHeadingColor(todo)
-		} else {
-			str = ApplyTODOColor(todo)
-		}
-		i++
-		fmt.Println(fmt.Sprintf("%s%s", indentStr, str))
+	todoHeadings := organisedContent.TODOs[:2]
+	for _, heading := range todoHeadings {
+		fmt.Println(fmt.Sprintf("%s%s", indentStr, ApplyHeadingColor(heading)))
+	}
+	todos := organisedContent.TODOs[2:]
+	for i, todo := range todos {
+		s := fmt.Sprintf("%s%s) %s", indentStr, strconv.Itoa(i+1), todo)
+		fmt.Println(ApplyTODOColor(s))
 	}
 
-	i = 0
 	fmt.Println("")
 
-	for _, completed := range organisedContent.Completed {
-		if i <= 1 {
-			str = ApplyHeadingColor(completed)
-		} else {
-			str = ApplyCompleteColor(completed)
-		}
-		i++
-		fmt.Println(fmt.Sprintf("%s%s", indentStr, str))
+	completedHeadings := organisedContent.Completed[:2]
+	for _, heading := range completedHeadings {
+		fmt.Println(fmt.Sprintf("%s%s", indentStr, ApplyHeadingColor(heading)))
+	}
+	completed := organisedContent.Completed[2:]
+	for i, complete := range completed {
+		s := fmt.Sprintf("%s%s) %s", indentStr, strconv.Itoa(i+1), complete)
+		fmt.Println(ApplyCompleteColor(s))
 	}
 }
 
 func PresentItems(organisedContent *content.OrganisedContent) {
-	i, beginNumbering, num := 0, 1, 1
-	for _, todo := range organisedContent.TODOs {
+	beginNumbering, num := 1, 1
+	for i, todo := range organisedContent.TODOs {
 		if i > beginNumbering {
 			s := fmt.Sprintf("%s%s) %s", indentStr, strconv.Itoa(num), todo)
 			fmt.Println(ApplyTODOColor(s))
@@ -54,7 +52,6 @@ func PresentItems(organisedContent *content.OrganisedContent) {
 		} else {
 			fmt.Println(ApplyHeadingColor(indentStr + todo))
 		}
-		i++
 	}
 }
 
