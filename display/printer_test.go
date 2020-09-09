@@ -6,7 +6,15 @@ import (
 )
 
 func TestPrintWithIndent(t *testing.T) {
-	str := "I watch too much Netflix\n"
+	str := `TODOs 13/01/2020
+================
+Do Something in the evening
+Write some code
+
+Completed 13/01/2020
+====================
+Finished a book`
+
 	organisedContent := content.NewOrganisedContent(str)
-	PrintWithIndent(organisedContent)
+	PrintWithIndent(organisedContent, content.ALL)
 }

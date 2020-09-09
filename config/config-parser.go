@@ -7,9 +7,10 @@ import (
 )
 
 type ToDoConfig struct {
-	Filename  string `yaml:"filename"`
-	SearchStr string `yaml:"searchstr"`
-	DaysToAdd int    `yaml:"daysToAdd"`
+	Filename          string `yaml:"filename"`
+	SearchStr         string `yaml:"searchstr"`
+	DaysToAdd         int    `yaml:"daysToAdd"`
+	UseTodayForNewDay bool   `yaml:"useTodayForNewDay"`
 }
 
 func GetConfig(filename string) *ToDoConfig {
@@ -37,8 +38,9 @@ func SaveConfig(config ToDoConfig, filename string) error {
 
 func NewDefault() *ToDoConfig {
 	return &ToDoConfig{
-		Filename:  "TODOs.txt",
-		SearchStr: "TODOs",
-		DaysToAdd: 1,
+		Filename:          "TODOs.txt",
+		SearchStr:         "TODOs",
+		DaysToAdd:         1,
+		UseTodayForNewDay: false,
 	}
 }

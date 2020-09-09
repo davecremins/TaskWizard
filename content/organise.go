@@ -6,6 +6,14 @@ import (
 	"strings"
 )
 
+type Content int
+
+const (
+	ALL Content = iota
+	TODOS
+	COMPLETED
+)
+
 type OrganisedContent struct {
 	Content       string
 	TODOs         []string
