@@ -5,18 +5,18 @@ import (
 )
 
 type ToDo struct {
-	Item string
+	Item        string
 	DateCreated time.Time
 }
 
 type Done struct {
-	Item string
+	Item          string
 	DateCompleted time.Time
-	Comment string
+	Comment       string
 }
 
 type Data struct {
-	ToDos []ToDo `json:"todos"`
+	ToDos     []ToDo `json:"todos"`
 	Completed []Done `json:"completed"`
 }
 
