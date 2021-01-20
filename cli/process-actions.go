@@ -15,7 +15,6 @@ func init() {
 	} else {
 		config := LoadConfig()
 		actionMap = make(map[string]ConfigFunc)
-		actionMap["newday"] = newDayActionMakeup(config)
 		actionMap["newtodo"] = newTodoActionMakeup(config)
 		actionMap["today"] = todaysTodosActionMakeup(config)
 		actionMap["complete"] = completeTodoActionMakeup(config)

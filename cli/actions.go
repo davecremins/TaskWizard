@@ -1,18 +1,15 @@
 package actions
 
 import (
-	"bufio"
 	"flag"
 	"fmt"
 	. "github.com/davecremins/ToDo-Manager/config"
 	"github.com/davecremins/ToDo-Manager/content"
-	"github.com/davecremins/ToDo-Manager/dates"
 	"github.com/davecremins/ToDo-Manager/display"
 	"log"
 	"os"
 	"strconv"
 	"strings"
-	"time"
 )
 
 type ConfigFunc func([]string)
@@ -29,23 +26,6 @@ func printDefaults() {
 		f()
 		fmt.Println("")
 	}
-}
-
-func newDayActionMakeup(config *ToDoConfig) ConfigFunc {
-	newDayCmd := flag.NewFlagSet("newday", flag.ExitOnError)
-	searchStr := newDayCmd.String("search", config.SearchStr, "Search string to look for")
-	daysToAdd := newDayCmd.Int("days", config.DaysToAdd, "Total amount of days to increment by")
-	filename := newDayCmd.String("filename", config.Filename, "Name of file to add new day to")
-	action := func(args []string) {
-		newDayCmd.Parse(args[2:])
-		config.SearchStr = *searchStr
-		config.DaysToAdd = *daysToAdd
-		config.Filename = *filename
-		log.Println("Config over-written for newday action")
-		newDayAction(config)
-	}
-	addFlagSetDefault(newDayCmd.Usage)
-	return action
 }
 
 func newTodoActionMakeup(config *ToDoConfig) ConfigFunc {
@@ -111,73 +91,6 @@ func mergeTodoActionMakeup(config *ToDoConfig) ConfigFunc {
 	}
 	addFlagSetDefault(mergeCmd.Usage)
 	return action
-}
-
-func newDayAction(config *ToDoConfig) {
-	file, err := os.OpenFile(config.Filename, os.O_RDWR, 0666)
-	defer file.Close()
-
-	if err != nil {
-		log.Fatalf("failed opening file: %s", err)
-	}
-
-	stats, _ := file.Stat()
-	size := stats.Size()
-	log.Println("Size of file:", size)
-
-	contentContainingStr := content.FindSearchStr(file, size, config.SearchStr)
-	dateStr, err := dates.FindDate(contentContainingStr)
-	if err != nil {
-		panic("Failed to find date in content")
-	}
-
-	var datetime time.Time
-
-	if config.UseTodayForNewDay {
-		datetime = dates.Today()
-	} else {
-
-		datetime, err = dates.ConvertToTime(dateStr)
-		if err != nil {
-			panic("Failed to convert date to time format")
-		}
-		datetime = dates.AddDays(datetime, config.DaysToAdd)
-	}
-
-	newDateStr := dates.ExtractShortDate(datetime)
-	newContent := strings.ReplaceAll(contentContainingStr, dateStr, newDateStr)
-	log.Println("Content updated with new date")
-
-	scanner := bufio.NewScanner(strings.NewReader(newContent))
-	scanner.Split(bufio.ScanLines)
-	strFound := false
-	readAfterFound := 0
-	var take []string
-	for scanner.Scan() {
-		output := scanner.Text()
-		strFound = strings.Contains(output, "Completed")
-		take = append(take, output)
-		if strFound || readAfterFound > 0 {
-			readAfterFound++
-		}
-
-		if readAfterFound == 2 {
-			log.Println("Previous completed todos removed successfully")
-			break
-		}
-	}
-
-	file.Seek(0, 2)
-	_, err = file.Write([]byte("\n\n"))
-	if err != nil {
-		panic("Falied to write newlines to file")
-	}
-
-	_, err = file.Write([]byte(strings.Join(take, "\n")))
-	if err != nil {
-		panic("Falied to write new content to file")
-	}
-	log.Println("New day todos copied successfully")
 }
 
 func newTodoAction(config *ToDoConfig, todo string) {
