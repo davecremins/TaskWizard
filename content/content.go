@@ -48,8 +48,3 @@ func bottomUpSearch(contents ContentOperator, size int64, searchStr string) stri
 	length := len(builder)
 	return builder[pos:length]
 }
-
-func GetInitContentWithPlaceholders() string {
-	initContent := "TODOs %s\n================\n\nCompleted %s\n====================\n"
-	return initContent
-}

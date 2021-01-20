@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-func main() {
+func main1() {
 	data := new(t.Data)
 	data.AddNewToDo(t.ToDo{Item: "Test this code", DateCreated: time.Now()})
 	data.AddNewToDo(t.ToDo{Item: "Continue building application", DateCreated: time.Now()})
@@ -43,7 +43,7 @@ func main() {
 
 	tbl.Print()
 
-fmt.Println("Adding new TODO to in-memory structure")
+	fmt.Println("Adding new TODO to in-memory structure")
 
 	data.AddNewToDo(t.ToDo{Item: "Continue building application on another night", DateCreated: time.Now()})
 
@@ -52,13 +52,11 @@ fmt.Println("Adding new TODO to in-memory structure")
 	encoder.Encode(data)
 	file.Close()
 
-
 	tbl1 := table.New("No.", "ToDo", "Added")
 	tbl1.WithHeaderFormatter(headerFmt).WithFirstColumnFormatter(columnFmt)
 	for i, todo := range data.ToDos {
 		tbl1.AddRow(i+1, todo.Item, todo.DateCreated)
 	}
-
 
 	tbl1.Print()
 }

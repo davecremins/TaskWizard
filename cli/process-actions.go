@@ -4,20 +4,24 @@ import (
 	"fmt"
 	. "github.com/davecremins/ToDo-Manager/config"
 	"log"
+	"os"
 )
 
 var actionMap map[string]ConfigFunc
 
 func init() {
-	config := LoadConfig()
-	actionMap = make(map[string]ConfigFunc)
-	actionMap["init"] = initActionMakeup(config)
-	actionMap["newday"] = newDayActionMakeup(config)
-	actionMap["newtodo"] = newTodoActionMakeup(config)
-	actionMap["today"] = todaysTodosActionMakeup(config)
-	actionMap["complete"] = completeTodoActionMakeup(config)
-	actionMap["move"] = moveTodoActionMakeup(config)
-	actionMap["merge"] = mergeTodoActionMakeup(config)
+	stranglePattern := os.Getenv("strangle")
+	if stranglePattern != "" {
+	} else {
+		config := LoadConfig()
+		actionMap = make(map[string]ConfigFunc)
+		actionMap["newday"] = newDayActionMakeup(config)
+		actionMap["newtodo"] = newTodoActionMakeup(config)
+		actionMap["today"] = todaysTodosActionMakeup(config)
+		actionMap["complete"] = completeTodoActionMakeup(config)
+		actionMap["move"] = moveTodoActionMakeup(config)
+		actionMap["merge"] = mergeTodoActionMakeup(config)
+	}
 }
 
 func Process(args []string) {

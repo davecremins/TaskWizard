@@ -8,7 +8,6 @@ import (
 	"github.com/davecremins/ToDo-Manager/content"
 	"github.com/davecremins/ToDo-Manager/dates"
 	"github.com/davecremins/ToDo-Manager/display"
-	"io/ioutil"
 	"log"
 	"os"
 	"strconv"
@@ -30,19 +29,6 @@ func printDefaults() {
 		f()
 		fmt.Println("")
 	}
-}
-
-func initActionMakeup(config *ToDoConfig) ConfigFunc {
-	initCmd := flag.NewFlagSet("init", flag.ExitOnError)
-	filename := initCmd.String("filename", config.Filename, "Name of file to initialise")
-	action := func(args []string) {
-		initCmd.Parse(args[2:])
-		config.Filename = *filename
-		log.Println("Config over-written for init action")
-		initAction(config)
-	}
-	addFlagSetDefault(initCmd.Usage)
-	return action
 }
 
 func newDayActionMakeup(config *ToDoConfig) ConfigFunc {
@@ -125,17 +111,6 @@ func mergeTodoActionMakeup(config *ToDoConfig) ConfigFunc {
 	}
 	addFlagSetDefault(mergeCmd.Usage)
 	return action
-}
-
-func initAction(config *ToDoConfig) {
-	initContent := content.GetInitContentWithPlaceholders()
-	formattedDate := dates.ExtractShortDate(time.Now())
-	filledInitContent := fmt.Sprintf(initContent, formattedDate, formattedDate)
-	err := ioutil.WriteFile(config.Filename, []byte(filledInitContent), 0644)
-	if err != nil {
-		log.Fatal("Error ocurred writing content for init action: ", err)
-	}
-	log.Println(config.Filename + " created successfully with default TODOs and Completed")
 }
 
 func newDayAction(config *ToDoConfig) {
