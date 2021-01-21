@@ -33,7 +33,7 @@ func printDefaults() {
 	}
 }
 
-func listTasks(config *ToDoConfig) Action {
+func showTasks(config *ToDoConfig) Action {
 	action := func(args []string) {
 		jsonFile, err := os.Open("data.json")
 		defer jsonFile.Close()

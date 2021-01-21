@@ -14,7 +14,7 @@ func init() {
 	if stranglePattern != "" {
 		config := LoadConfig()
 		actionMap = make(map[string]Action)
-		actionMap["list"] = listTasks(config)
+		actionMap["list"] = showTasks(config)
 	} else {
 		config := LoadConfig()
 		actionMap = make(map[string]Action)
