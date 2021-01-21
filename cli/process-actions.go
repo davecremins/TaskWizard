@@ -10,8 +10,11 @@ import (
 var actionMap map[string]Action
 
 func init() {
-	stranglePattern := os.Getenv("strangle")
+	stranglePattern := os.Getenv("STRANGLE")
 	if stranglePattern != "" {
+		config := LoadConfig()
+		actionMap = make(map[string]Action)
+		actionMap["list"] = listTasks(config)
 	} else {
 		config := LoadConfig()
 		actionMap = make(map[string]Action)

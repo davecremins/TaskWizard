@@ -10,6 +10,11 @@ import (
 	"os"
 	"strconv"
 	"strings"
+
+	"encoding/json"
+	t "github.com/davecremins/ToDo-Manager/todos"
+	"github.com/fatih/color"
+	"github.com/rodaine/table"
 )
 
 type Action func([]string)
@@ -26,6 +31,42 @@ func printDefaults() {
 		f()
 		fmt.Println("")
 	}
+}
+
+func listTasks(config *ToDoConfig) Action {
+	action := func(args []string) {
+		jsonFile, err := os.Open("data.json")
+		defer jsonFile.Close()
+		if err != nil {
+			log.Fatalf("failed opening file: %s", err)
+		}
+
+		stats, _ := jsonFile.Stat()
+		size := stats.Size()
+		if size == 0 {
+			log.Println("Data file is empty, no tasks to show")
+			return
+		}
+
+		decoder := json.NewDecoder(jsonFile)
+
+		data := new(t.Data)
+		if err = decoder.Decode(data); err != nil {
+			log.Panicf("Decode issue: %s", err)
+		}
+
+		// TODO: Move this into display package
+		headerFmt := color.New(color.FgGreen, color.Underline).SprintfFunc()
+		columnFmt := color.New(color.FgYellow).SprintfFunc()
+
+		tbl := table.New("No.", "ToDo", "Added")
+		tbl.WithHeaderFormatter(headerFmt).WithFirstColumnFormatter(columnFmt)
+		for i, todo := range data.ToDos {
+			tbl.AddRow(i+1, todo.Item, todo.DateCreated)
+		}
+		tbl.Print()
+	}
+	return action
 }
 
 // API to create a new task
