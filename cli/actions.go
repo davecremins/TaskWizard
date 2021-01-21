@@ -12,7 +12,7 @@ import (
 	"strings"
 )
 
-type ConfigFunc func([]string)
+type Action func([]string)
 
 var FlagDefaults []func()
 
@@ -28,7 +28,8 @@ func printDefaults() {
 	}
 }
 
-func newTodoActionMakeup(config *ToDoConfig) ConfigFunc {
+// API to create a new task
+func newTodoActionMakeup(config *ToDoConfig) Action {
 	newTodoCmd := flag.NewFlagSet("newtodo", flag.ExitOnError)
 	searchStr := newTodoCmd.String("search", config.SearchStr, "Search string to look for")
 	filename := newTodoCmd.String("filename", config.Filename, "Name of file to add new todo")
@@ -44,7 +45,8 @@ func newTodoActionMakeup(config *ToDoConfig) ConfigFunc {
 	return action
 }
 
-func todaysTodosActionMakeup(config *ToDoConfig) ConfigFunc {
+// API to list tasks
+func todaysTodosActionMakeup(config *ToDoConfig) Action {
 	todaysTodosCmd := flag.NewFlagSet("today", flag.ExitOnError)
 	searchStr := todaysTodosCmd.String("search", config.SearchStr, "Search string to look for")
 	filename := todaysTodosCmd.String("filename", config.Filename, "Name of file to search in")
@@ -60,7 +62,8 @@ func todaysTodosActionMakeup(config *ToDoConfig) ConfigFunc {
 
 }
 
-func completeTodoActionMakeup(config *ToDoConfig) ConfigFunc {
+// API to complete task
+func completeTodoActionMakeup(config *ToDoConfig) Action {
 	completeCmd := flag.NewFlagSet("complete", flag.ExitOnError)
 	includeEdit := completeCmd.Bool("edit", false, "Option to edit todo item before completion")
 	action := func(args []string) {
@@ -73,7 +76,8 @@ func completeTodoActionMakeup(config *ToDoConfig) ConfigFunc {
 	return action
 }
 
-func moveTodoActionMakeup(config *ToDoConfig) ConfigFunc {
+// API to reorder task
+func moveTodoActionMakeup(config *ToDoConfig) Action {
 	moveCmd := flag.NewFlagSet("move", flag.ExitOnError)
 	action := func(args []string) {
 		log.Println("Config not over-written for move action")
@@ -83,7 +87,8 @@ func moveTodoActionMakeup(config *ToDoConfig) ConfigFunc {
 	return action
 }
 
-func mergeTodoActionMakeup(config *ToDoConfig) ConfigFunc {
+// API to merge tasks
+func mergeTodoActionMakeup(config *ToDoConfig) Action {
 	mergeCmd := flag.NewFlagSet("merge", flag.ExitOnError)
 	action := func(args []string) {
 		log.Println("Config not over-written for move action")

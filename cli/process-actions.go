@@ -7,14 +7,14 @@ import (
 	"os"
 )
 
-var actionMap map[string]ConfigFunc
+var actionMap map[string]Action
 
 func init() {
 	stranglePattern := os.Getenv("strangle")
 	if stranglePattern != "" {
 	} else {
 		config := LoadConfig()
-		actionMap = make(map[string]ConfigFunc)
+		actionMap = make(map[string]Action)
 		actionMap["newtodo"] = newTodoActionMakeup(config)
 		actionMap["today"] = todaysTodosActionMakeup(config)
 		actionMap["complete"] = completeTodoActionMakeup(config)
