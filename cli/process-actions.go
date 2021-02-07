@@ -16,6 +16,7 @@ func init() {
 		actionMap = make(map[string]Action)
 		actionMap["list"] = showTasks(config)
 		actionMap["add"] = newTask(config)
+		actionMap["complete"] = completeTask(config)
 	} else {
 		config := LoadConfig()
 		actionMap = make(map[string]Action)

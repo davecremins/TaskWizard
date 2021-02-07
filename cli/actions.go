@@ -109,6 +109,69 @@ func newTask(config *ToDoConfig) Action {
 	return action
 }
 
+func completeTask(config *ToDoConfig) Action {
+	completeCmd := flag.NewFlagSet("complete", flag.ExitOnError)
+	includeComment := completeCmd.Bool("comment", false, "Option to include comment for task before completion")
+	action := func(args []string) {
+		completeCmd.Parse(args[2:])
+		jsonFile, err := os.Open("data.json")
+		defer jsonFile.Close()
+		if err != nil {
+			log.Fatalf("failed opening file: %s", err)
+		}
+
+		stats, _ := jsonFile.Stat()
+		size := stats.Size()
+		if size == 0 {
+			log.Println("Data file is empty, no tasks to complete")
+			return
+		}
+
+		decoder := json.NewDecoder(jsonFile)
+
+		data := new(t.Data)
+		if err = decoder.Decode(data); err != nil {
+			log.Panicf("Decode issue: %s", err)
+		}
+
+		// TODO: Move this into display package
+		headerFmt := color.New(color.FgGreen, color.Underline).SprintfFunc()
+		columnFmt := color.New(color.FgYellow).SprintfFunc()
+
+		tbl := table.New("No.", "Task", "Created")
+		tbl.WithHeaderFormatter(headerFmt).WithFirstColumnFormatter(columnFmt)
+		for i, todo := range data.ToDos {
+			tbl.AddRow(i+1, todo.Item, todo.DateCreated)
+		}
+		tbl.Print()
+
+		fmt.Println("")
+		fmt.Println("")
+
+		response := display.AcceptInput("Enter task number for completion: ")
+		i, err := strconv.Atoi(response)
+		if err != nil {
+			panic(err)
+		}
+
+		var comment string = ""
+		if *includeComment {
+			comment = display.AcceptInput("Enter comment: ")
+		}
+
+		data.CompleteTask(i, comment)
+
+		file, _ := os.OpenFile("data.json", os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0666)
+		encoder := json.NewEncoder(file)
+		encoder.Encode(data)
+		file.Close()
+
+		log.Println("Task completed successfully")
+	}
+	addFlagSetDefault(completeCmd.Usage)
+	return action
+}
+
 // API to create a new task
 func newTodoActionMakeup(config *ToDoConfig) Action {
 	newTaskCmd := flag.NewFlagSet("newtodo", flag.ExitOnError)
