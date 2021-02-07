@@ -10,6 +10,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"encoding/json"
 	t "github.com/davecremins/ToDo-Manager/todos"
@@ -69,20 +70,59 @@ func showTasks(config *ToDoConfig) Action {
 	return action
 }
 
+func newTask(config *ToDoConfig) Action {
+	newTaskCmd := flag.NewFlagSet("add", flag.ExitOnError)
+	task := newTaskCmd.String("desc", "New task placeholder", "Description of new task")
+	action := func(args []string) {
+		jsonFile, err := os.Open("data.json")
+		defer jsonFile.Close()
+		if err != nil {
+			log.Fatalf("failed opening file: %s", err)
+		}
+
+		data := new(t.Data)
+
+		stats, _ := jsonFile.Stat()
+		size := stats.Size()
+		if size == 0 {
+			log.Println("Data file is empty, no decode required")
+		} else {
+			decoder := json.NewDecoder(jsonFile)
+			if err = decoder.Decode(data); err != nil {
+				log.Panicf("Decode issue: %s", err)
+			}
+		}
+
+		newTaskCmd.Parse(args[2:])
+		newTask := t.ToDo{Item: *task, DateCreated: time.Now()}
+		data.AddNewToDo(newTask)
+
+		file, _ := os.OpenFile("data.json", os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0666)
+		encoder := json.NewEncoder(file)
+		encoder.Encode(data)
+		file.Close()
+
+		log.Println("New task added successfully")
+
+	}
+	addFlagSetDefault(newTaskCmd.Usage)
+	return action
+}
+
 // API to create a new task
 func newTodoActionMakeup(config *ToDoConfig) Action {
-	newTodoCmd := flag.NewFlagSet("newtodo", flag.ExitOnError)
-	searchStr := newTodoCmd.String("search", config.SearchStr, "Search string to look for")
-	filename := newTodoCmd.String("filename", config.Filename, "Name of file to add new todo")
-	todo := newTodoCmd.String("desc", "New todo item placeholder", "Description of new todo")
+	newTaskCmd := flag.NewFlagSet("newtodo", flag.ExitOnError)
+	searchStr := newTaskCmd.String("search", config.SearchStr, "Search string to look for")
+	filename := newTaskCmd.String("filename", config.Filename, "Name of file to add new todo")
+	todo := newTaskCmd.String("desc", "New todo item placeholder", "Description of new todo")
 	action := func(args []string) {
-		newTodoCmd.Parse(args[2:])
+		newTaskCmd.Parse(args[2:])
 		config.SearchStr = *searchStr
 		config.Filename = *filename
 		log.Println("Config over-written for newtodo action")
 		newTodoAction(config, *todo)
 	}
-	addFlagSetDefault(newTodoCmd.Usage)
+	addFlagSetDefault(newTaskCmd.Usage)
 	return action
 }
 
