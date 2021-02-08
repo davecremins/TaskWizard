@@ -18,6 +18,7 @@ func init() {
 		actionMap["add"] = newTask(config)
 		actionMap["complete"] = completeTask(config)
 		actionMap["move"] = moveTask(config)
+		actionMap["merge"] = mergeTasks(config)
 	} else {
 		config := LoadConfig()
 		actionMap = make(map[string]Action)

@@ -234,6 +234,68 @@ func moveTask(config *ToDoConfig) Action {
 
 }
 
+func mergeTasks(config *ToDoConfig) Action {
+	mergeCmd := flag.NewFlagSet("merge", flag.ExitOnError)
+	action := func(args []string) {
+
+		jsonFile, err := os.Open("data.json")
+		defer jsonFile.Close()
+		if err != nil {
+			log.Fatalf("failed opening file: %s", err)
+		}
+
+		stats, _ := jsonFile.Stat()
+		size := stats.Size()
+		if size == 0 {
+			log.Println("Data file is empty, no tasks to merge")
+			return
+		}
+
+		decoder := json.NewDecoder(jsonFile)
+
+		data := new(t.Data)
+		if err = decoder.Decode(data); err != nil {
+			log.Panicf("Decode issue: %s", err)
+		}
+
+		// TODO: Move this into display package
+		headerFmt := color.New(color.FgGreen, color.Underline).SprintfFunc()
+		columnFmt := color.New(color.FgYellow).SprintfFunc()
+
+		tbl := table.New("No.", "Task", "Created")
+		tbl.WithHeaderFormatter(headerFmt).WithFirstColumnFormatter(columnFmt)
+		for i, todo := range data.ToDos {
+			tbl.AddRow(i+1, todo.Item, todo.DateCreated)
+		}
+		tbl.Print()
+
+		fmt.Println("")
+		fmt.Println("")
+
+		response := display.AcceptInput("Enter task number for merge followed by task number to merge with: ")
+		entries := strings.Fields(response)
+		item, err := strconv.Atoi(entries[0])
+		if err != nil {
+			panic(err)
+		}
+		mergeWith, err := strconv.Atoi(entries[1])
+		if err != nil {
+			panic(err)
+		}
+
+		data.MergeTasks(item, mergeWith)
+		file, _ := os.OpenFile("data.json", os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0666)
+		encoder := json.NewEncoder(file)
+		encoder.Encode(data)
+		file.Close()
+
+		log.Println("Task merged successfully")
+	}
+	addFlagSetDefault(mergeCmd.Usage)
+	return action
+
+}
+
 // API to create a new task
 func newTodoActionMakeup(config *ToDoConfig) Action {
 	newTaskCmd := flag.NewFlagSet("newtodo", flag.ExitOnError)
