@@ -77,13 +77,13 @@ func (d *Data) MoveTask(taskNum, newPosition int) {
 	d.ToDos[realIndexForNewPosition] = task
 }
 
-func (d *Data) MergeTasks(taskNum, mergingTaskNum int) {
+func (d *Data) MergeTasks(taskNum, mergeWith int) {
 	taskcount := len(d.ToDos)
 	if taskcount == 0 {
 		panic("no tasks to merge")
 	}
 
-	if taskNum == mergingTaskNum {
+	if taskNum == mergeWith {
 		return
 	}
 
@@ -91,7 +91,7 @@ func (d *Data) MergeTasks(taskNum, mergingTaskNum int) {
 		panic("task number is out of bounds")
 	}
 
-	if mergingTaskNum > taskcount || mergingTaskNum <= 0 {
+	if mergeWith > taskcount || mergeWith <= 0 {
 		panic("new position for task is out of bounds")
 	}
 
@@ -99,9 +99,10 @@ func (d *Data) MergeTasks(taskNum, mergingTaskNum int) {
 	realIndex := taskNum - 1
 	taskToMerge := d.ToDos[realIndex]
 
-	realIndexForTaskToMergeWith := mergingTaskNum - 1
+	realIndexForTaskToMergeWith := mergeWith - 1
 	mergingTask := d.ToDos[realIndexForTaskToMergeWith]
 	mergedTask := ToDo{Item: fmt.Sprintf("%s%s%s", mergingTask.Item, " - ", taskToMerge.Item), DateCreated: mergingTask.DateCreated}
 	d.ToDos[realIndexForTaskToMergeWith] = mergedTask
-	d.ToDos = append(d.ToDos[:realIndex], d.ToDos[realIndexForTaskToMergeWith+1:]...)
+	//c.TODOs = append(c.TODOs[:realIndexForTodoForMerge], c.TODOs[realIndexForTodoForMerge+1:]...)
+	d.ToDos = append(d.ToDos[:realIndex], d.ToDos[realIndex+1:]...)
 }
