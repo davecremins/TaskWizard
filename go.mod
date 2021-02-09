@@ -1,4 +1,4 @@
-module github.com/davecremins/ToDo-Manager
+module github.com/davecremins/TaskWizard
 
 go 1.12
 

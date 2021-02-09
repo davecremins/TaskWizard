@@ -2,7 +2,7 @@ package actions
 
 import (
 	"fmt"
-	. "github.com/davecremins/ToDo-Manager/config"
+	. "github.com/davecremins/TaskWizard/config"
 	"log"
 )
 

@@ -6,8 +6,8 @@ import (
 )
 
 const (
-	DIRECTORY_NAME = ".ToDo-Manager"
-	CONFIG_NAME    = "ToDo-Manager.yaml"
+	DIRECTORY_NAME = ".TaskWizard"
+	CONFIG_NAME    = "TaskWizard.yaml"
 )
 
 var userDirForConfig string

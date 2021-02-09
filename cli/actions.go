@@ -3,8 +3,8 @@ package actions
 import (
 	"flag"
 	"fmt"
-	. "github.com/davecremins/ToDo-Manager/config"
-	"github.com/davecremins/ToDo-Manager/display"
+	. "github.com/davecremins/TaskWizard/config"
+	"github.com/davecremins/TaskWizard/display"
 	"log"
 	"os"
 	"strconv"
@@ -12,7 +12,7 @@ import (
 	"time"
 
 	"encoding/json"
-	t "github.com/davecremins/ToDo-Manager/tasks"
+	t "github.com/davecremins/TaskWizard/tasks"
 	"github.com/fatih/color"
 	"github.com/rodaine/table"
 )

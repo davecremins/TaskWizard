@@ -1,7 +1,7 @@
 package main
 
 import (
-	. "github.com/davecremins/ToDo-Manager/cli"
+	. "github.com/davecremins/TaskWizard/cli"
 	"os"
 )
 
