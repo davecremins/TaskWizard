@@ -22,15 +22,10 @@ func TestMergeTasks(t *testing.T) {
 	t.Log(data.ToDos)
 }
 
-/*func TestMergeTODOsPanicsWhenToDoPositionIsOutOfBounds(t *testing.T) {
-	content := `TODOs 13/01/2020
-================
-Do Something in the evening
-Write some code
-
-Completed 13/01/2020
-====================
-Finished a book`
+func TestMergeTasksPanicsWhenPositionIsOutOfBounds(t *testing.T) {
+	data := new(Data)
+	data.AddNewToDo(ToDo{Item: "Refactor application", DateCreated: time.Now()})
+	data.AddNewToDo(ToDo{Item: "Refactor application more", DateCreated: time.Now()})
 
 	defer func() {
 		r := recover()
@@ -39,19 +34,15 @@ Finished a book`
 		}
 		t.Log(r)
 	}()
-	organisedContent := NewOrganisedContent(content)
-	organisedContent.MergeTODOs(7, 1)
+	data.MergeTasks(7, 2)
 }
 
-func TestMergeTODOsPanicsWhenToDoDestinationPositionIsOutOfBounds(t *testing.T) {
-	content := `TODOs 13/01/2020
-================
-Do Something in the evening
-Write some code
-
-Completed 13/01/2020
-====================
-Finished a book`
+func TestMergeTasksPanicsWhenDestinationPositionIsOutOfBounds(t *testing.T) {
+	data := new(Data)
+	data.AddNewToDo(ToDo{Item: "Test this code", DateCreated: time.Now()})
+	data.AddNewToDo(ToDo{Item: "Continue building application", DateCreated: time.Now()})
+	data.AddNewToDo(ToDo{Item: "Refactor application", DateCreated: time.Now()})
+	data.AddNewToDo(ToDo{Item: "Refactor application more", DateCreated: time.Now()})
 
 	defer func() {
 		r := recover()
@@ -60,19 +51,16 @@ Finished a book`
 		}
 		t.Log(r)
 	}()
-	organisedContent := NewOrganisedContent(content)
-	organisedContent.MergeTODOs(1, 3)
+
+	data.MergeTasks(2, 9)
 }
 
-func TestMergeTODOsPanicsWhenToDoPositionIsOutOfBoundsNegative(t *testing.T) {
-	content := `TODOs 13/01/2020
-================
-Do Something in the evening
-Write some code
-
-Completed 13/01/2020
-====================
-Finished a book`
+func TestMergeTasksPanicsWhenDestinationPositionIsOutOfBoundsNegative(t *testing.T) {
+	data := new(Data)
+	data.AddNewToDo(ToDo{Item: "Test this code", DateCreated: time.Now()})
+	data.AddNewToDo(ToDo{Item: "Continue building application", DateCreated: time.Now()})
+	data.AddNewToDo(ToDo{Item: "Refactor application", DateCreated: time.Now()})
+	data.AddNewToDo(ToDo{Item: "Refactor application more", DateCreated: time.Now()})
 
 	defer func() {
 		r := recover()
@@ -81,19 +69,15 @@ Finished a book`
 		}
 		t.Log(r)
 	}()
-	organisedContent := NewOrganisedContent(content)
-	organisedContent.MergeTODOs(-1, 3)
+	data.MergeTasks(2, -4)
 }
 
-func TestMergeTODOsPanicsWhenToDoDestinationPositionIsOutOfBoundsNegative(t *testing.T) {
-	content := `TODOs 13/01/2020
-================
-Do Something in the evening
-Write some code
-
-Completed 13/01/2020
-====================
-Finished a book`
+func TestMergeTasksPanicsWhenPositionIsOutOfBoundsNegative(t *testing.T) {
+	data := new(Data)
+	data.AddNewToDo(ToDo{Item: "Test this code", DateCreated: time.Now()})
+	data.AddNewToDo(ToDo{Item: "Continue building application", DateCreated: time.Now()})
+	data.AddNewToDo(ToDo{Item: "Refactor application", DateCreated: time.Now()})
+	data.AddNewToDo(ToDo{Item: "Refactor application more", DateCreated: time.Now()})
 
 	defer func() {
 		r := recover()
@@ -102,6 +86,30 @@ Finished a book`
 		}
 		t.Log(r)
 	}()
-	organisedContent := NewOrganisedContent(content)
-	organisedContent.MergeTODOs(1, -3)
-}*/
+	data.MergeTasks(-3, 2)
+}
+
+func TestMergeTasksPanicsWhenNoDataExists(t *testing.T) {
+	data := new(Data)
+
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf("Should panic with bad input")
+		}
+		t.Log(r)
+	}()
+	data.MergeTasks(-3, 2)
+}
+
+func TestMergeTaskToItself(t *testing.T) {
+	data := new(Data)
+	data.AddNewToDo(ToDo{Item: "Test this code", DateCreated: time.Now()})
+	data.MergeTasks(1, 1)
+
+	want := "Test this code"
+	if data.ToDos[0].Item != want {
+		t.Errorf("Side effect when merging to self, got %s, want %s", data.ToDos[0].Item, want)
+		t.Log(data.ToDos)
+	}
+}

@@ -95,7 +95,6 @@ func (d *Data) MergeTasks(taskNum, mergeWith int) {
 		panic("new position for task is out of bounds")
 	}
 
-	// Account for headings
 	realIndex := taskNum - 1
 	taskToMerge := d.ToDos[realIndex]
 
@@ -103,6 +102,5 @@ func (d *Data) MergeTasks(taskNum, mergeWith int) {
 	mergingTask := d.ToDos[realIndexForTaskToMergeWith]
 	mergedTask := ToDo{Item: fmt.Sprintf("%s%s%s", mergingTask.Item, " - ", taskToMerge.Item), DateCreated: mergingTask.DateCreated}
 	d.ToDos[realIndexForTaskToMergeWith] = mergedTask
-	//c.TODOs = append(c.TODOs[:realIndexForTodoForMerge], c.TODOs[realIndexForTodoForMerge+1:]...)
 	d.ToDos = append(d.ToDos[:realIndex], d.ToDos[realIndex+1:]...)
 }
