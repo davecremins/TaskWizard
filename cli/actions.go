@@ -1,22 +1,23 @@
 package actions
 
 import (
-	"bufio"
 	"flag"
 	"fmt"
 	. "github.com/davecremins/ToDo-Manager/config"
-	"github.com/davecremins/ToDo-Manager/content"
-	"github.com/davecremins/ToDo-Manager/dates"
 	"github.com/davecremins/ToDo-Manager/display"
-	"io/ioutil"
 	"log"
 	"os"
 	"strconv"
 	"strings"
 	"time"
+
+	"encoding/json"
+	t "github.com/davecremins/ToDo-Manager/tasks"
+	"github.com/fatih/color"
+	"github.com/rodaine/table"
 )
 
-type ConfigFunc func([]string)
+type Action func([]string)
 
 var FlagDefaults []func()
 
@@ -32,352 +33,264 @@ func printDefaults() {
 	}
 }
 
-func initActionMakeup(config *ToDoConfig) ConfigFunc {
-	initCmd := flag.NewFlagSet("init", flag.ExitOnError)
-	filename := initCmd.String("filename", config.Filename, "Name of file to initialise")
+func showTasks(config *ToDoConfig) Action {
 	action := func(args []string) {
-		initCmd.Parse(args[2:])
-		config.Filename = *filename
-		log.Println("Config over-written for init action")
-		initAction(config)
+		jsonFile, err := os.Open("data.json")
+		defer jsonFile.Close()
+		if err != nil {
+			log.Fatalf("failed opening file: %s", err)
+		}
+
+		stats, _ := jsonFile.Stat()
+		size := stats.Size()
+		if size == 0 {
+			log.Println("Data file is empty, no tasks to show")
+			return
+		}
+
+		decoder := json.NewDecoder(jsonFile)
+
+		data := new(t.Data)
+		if err = decoder.Decode(data); err != nil {
+			log.Panicf("Decode issue: %s", err)
+		}
+
+		// TODO: Move this into display package
+		headerFmt := color.New(color.FgGreen, color.Underline).SprintfFunc()
+		columnFmt := color.New(color.FgYellow).SprintfFunc()
+
+		tbl := table.New("No.", "Task", "Added")
+		tbl.WithHeaderFormatter(headerFmt).WithFirstColumnFormatter(columnFmt)
+		for i, task := range data.Tasks {
+			tbl.AddRow(i+1, task.Item, task.DateCreated)
+		}
+		tbl.Print()
 	}
-	addFlagSetDefault(initCmd.Usage)
 	return action
 }
 
-func newDayActionMakeup(config *ToDoConfig) ConfigFunc {
-	newDayCmd := flag.NewFlagSet("newday", flag.ExitOnError)
-	searchStr := newDayCmd.String("search", config.SearchStr, "Search string to look for")
-	daysToAdd := newDayCmd.Int("days", config.DaysToAdd, "Total amount of days to increment by")
-	filename := newDayCmd.String("filename", config.Filename, "Name of file to add new day to")
+func newTask(config *ToDoConfig) Action {
+	newTaskCmd := flag.NewFlagSet("add", flag.ExitOnError)
+	task := newTaskCmd.String("desc", "New task placeholder", "Description of new task")
 	action := func(args []string) {
-		newDayCmd.Parse(args[2:])
-		config.SearchStr = *searchStr
-		config.DaysToAdd = *daysToAdd
-		config.Filename = *filename
-		log.Println("Config over-written for newday action")
-		newDayAction(config)
+		jsonFile, err := os.Open("data.json")
+		defer jsonFile.Close()
+		if err != nil {
+			log.Fatalf("failed opening file: %s", err)
+		}
+
+		data := new(t.Data)
+
+		stats, _ := jsonFile.Stat()
+		size := stats.Size()
+		if size == 0 {
+			log.Println("Data file is empty, no decode required")
+		} else {
+			decoder := json.NewDecoder(jsonFile)
+			if err = decoder.Decode(data); err != nil {
+				log.Panicf("Decode issue: %s", err)
+			}
+		}
+
+		newTaskCmd.Parse(args[2:])
+		newTask := t.Task{Item: *task, DateCreated: time.Now()}
+		data.AddNewTask(newTask)
+
+		file, _ := os.OpenFile("data.json", os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0666)
+		encoder := json.NewEncoder(file)
+		encoder.Encode(data)
+		file.Close()
+
+		log.Println("New task added successfully")
+
 	}
-	addFlagSetDefault(newDayCmd.Usage)
+	addFlagSetDefault(newTaskCmd.Usage)
 	return action
 }
 
-func newTodoActionMakeup(config *ToDoConfig) ConfigFunc {
-	newTodoCmd := flag.NewFlagSet("newtodo", flag.ExitOnError)
-	searchStr := newTodoCmd.String("search", config.SearchStr, "Search string to look for")
-	filename := newTodoCmd.String("filename", config.Filename, "Name of file to add new todo")
-	todo := newTodoCmd.String("desc", "New todo item placeholder", "Description of new todo")
-	action := func(args []string) {
-		newTodoCmd.Parse(args[2:])
-		config.SearchStr = *searchStr
-		config.Filename = *filename
-		log.Println("Config over-written for newtodo action")
-		newTodoAction(config, *todo)
-	}
-	addFlagSetDefault(newTodoCmd.Usage)
-	return action
-}
-
-func todaysTodosActionMakeup(config *ToDoConfig) ConfigFunc {
-	todaysTodosCmd := flag.NewFlagSet("today", flag.ExitOnError)
-	searchStr := todaysTodosCmd.String("search", config.SearchStr, "Search string to look for")
-	filename := todaysTodosCmd.String("filename", config.Filename, "Name of file to search in")
-	action := func(args []string) {
-		todaysTodosCmd.Parse(args[2:])
-		config.SearchStr = *searchStr
-		config.Filename = *filename
-		log.Println("Config over-written for today action")
-		todaysTodosAction(config)
-	}
-	addFlagSetDefault(todaysTodosCmd.Usage)
-	return action
-
-}
-
-func completeTodoActionMakeup(config *ToDoConfig) ConfigFunc {
+func completeTask(config *ToDoConfig) Action {
 	completeCmd := flag.NewFlagSet("complete", flag.ExitOnError)
-	includeEdit := completeCmd.Bool("edit", false, "Option to edit todo item before completion")
+	includeComment := completeCmd.Bool("comment", false, "Option to include comment for task before completion")
 	action := func(args []string) {
 		completeCmd.Parse(args[2:])
-		log.Println("Config not over-written for complete action")
-		log.Println("Specific complete cmd flag included", *includeEdit)
-		completeTodoAction(config, *includeEdit)
+		jsonFile, err := os.Open("data.json")
+		defer jsonFile.Close()
+		if err != nil {
+			log.Fatalf("failed opening file: %s", err)
+		}
+
+		stats, _ := jsonFile.Stat()
+		size := stats.Size()
+		if size == 0 {
+			log.Println("Data file is empty, no tasks to complete")
+			return
+		}
+
+		decoder := json.NewDecoder(jsonFile)
+
+		data := new(t.Data)
+		if err = decoder.Decode(data); err != nil {
+			log.Panicf("Decode issue: %s", err)
+		}
+
+		// TODO: Move this into display package
+		headerFmt := color.New(color.FgGreen, color.Underline).SprintfFunc()
+		columnFmt := color.New(color.FgYellow).SprintfFunc()
+
+		tbl := table.New("No.", "Task", "Created")
+		tbl.WithHeaderFormatter(headerFmt).WithFirstColumnFormatter(columnFmt)
+		for i, task := range data.Tasks {
+			tbl.AddRow(i+1, task.Item, task.DateCreated)
+		}
+		tbl.Print()
+
+		fmt.Println("")
+		fmt.Println("")
+
+		response := display.AcceptInput("Enter task number for completion: ")
+		i, err := strconv.Atoi(response)
+		if err != nil {
+			panic(err)
+		}
+
+		var comment string = ""
+		if *includeComment {
+			comment = display.AcceptInput("Enter comment: ")
+		}
+
+		data.CompleteTask(i, comment)
+
+		file, _ := os.OpenFile("data.json", os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0666)
+		encoder := json.NewEncoder(file)
+		encoder.Encode(data)
+		file.Close()
+
+		log.Println("Task completed successfully")
 	}
 	addFlagSetDefault(completeCmd.Usage)
 	return action
 }
 
-func moveTodoActionMakeup(config *ToDoConfig) ConfigFunc {
+func moveTask(config *ToDoConfig) Action {
 	moveCmd := flag.NewFlagSet("move", flag.ExitOnError)
 	action := func(args []string) {
-		log.Println("Config not over-written for move action")
-		moveTodoAction(config)
+		jsonFile, err := os.Open("data.json")
+		defer jsonFile.Close()
+		if err != nil {
+			log.Fatalf("failed opening file: %s", err)
+		}
+
+		stats, _ := jsonFile.Stat()
+		size := stats.Size()
+		if size == 0 {
+			log.Println("Data file is empty, no tasks to move")
+			return
+		}
+
+		decoder := json.NewDecoder(jsonFile)
+
+		data := new(t.Data)
+		if err = decoder.Decode(data); err != nil {
+			log.Panicf("Decode issue: %s", err)
+		}
+
+		// TODO: Move this into display package
+		headerFmt := color.New(color.FgGreen, color.Underline).SprintfFunc()
+		columnFmt := color.New(color.FgYellow).SprintfFunc()
+
+		tbl := table.New("No.", "Task", "Created")
+		tbl.WithHeaderFormatter(headerFmt).WithFirstColumnFormatter(columnFmt)
+		for i, task := range data.Tasks {
+			tbl.AddRow(i+1, task.Item, task.DateCreated)
+		}
+		tbl.Print()
+
+		fmt.Println("")
+		fmt.Println("")
+
+		response := display.AcceptInput("Enter task number that you want to move followed by number for new position: ")
+		entries := strings.Fields(response)
+		taskNum, err := strconv.Atoi(entries[0])
+		if err != nil {
+			panic(err)
+		}
+		newPosition, err := strconv.Atoi(entries[1])
+		if err != nil {
+			panic(err)
+		}
+
+		data.MoveTask(taskNum, newPosition)
+
+		file, _ := os.OpenFile("data.json", os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0666)
+		encoder := json.NewEncoder(file)
+		encoder.Encode(data)
+		file.Close()
+
+		log.Println("Task moved successfully")
 	}
 	addFlagSetDefault(moveCmd.Usage)
 	return action
+
 }
 
-func mergeTodoActionMakeup(config *ToDoConfig) ConfigFunc {
+func mergeTasks(config *ToDoConfig) Action {
 	mergeCmd := flag.NewFlagSet("merge", flag.ExitOnError)
 	action := func(args []string) {
-		log.Println("Config not over-written for move action")
-		mergeTodoAction(config)
+
+		jsonFile, err := os.Open("data.json")
+		defer jsonFile.Close()
+		if err != nil {
+			log.Fatalf("failed opening file: %s", err)
+		}
+
+		stats, _ := jsonFile.Stat()
+		size := stats.Size()
+		if size == 0 {
+			log.Println("Data file is empty, no tasks to merge")
+			return
+		}
+
+		decoder := json.NewDecoder(jsonFile)
+
+		data := new(t.Data)
+		if err = decoder.Decode(data); err != nil {
+			log.Panicf("Decode issue: %s", err)
+		}
+
+		// TODO: Move this into display package
+		headerFmt := color.New(color.FgGreen, color.Underline).SprintfFunc()
+		columnFmt := color.New(color.FgYellow).SprintfFunc()
+
+		tbl := table.New("No.", "Task", "Created")
+		tbl.WithHeaderFormatter(headerFmt).WithFirstColumnFormatter(columnFmt)
+		for i, task := range data.Tasks {
+			tbl.AddRow(i+1, task.Item, task.DateCreated)
+		}
+		tbl.Print()
+
+		fmt.Println("")
+		fmt.Println("")
+
+		response := display.AcceptInput("Enter task number for merge followed by task number to merge with: ")
+		entries := strings.Fields(response)
+		item, err := strconv.Atoi(entries[0])
+		if err != nil {
+			panic(err)
+		}
+		mergeWith, err := strconv.Atoi(entries[1])
+		if err != nil {
+			panic(err)
+		}
+
+		data.MergeTasks(item, mergeWith)
+		file, _ := os.OpenFile("data.json", os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0666)
+		encoder := json.NewEncoder(file)
+		encoder.Encode(data)
+		file.Close()
+
+		log.Println("Task merged successfully")
 	}
 	addFlagSetDefault(mergeCmd.Usage)
 	return action
-}
 
-func initAction(config *ToDoConfig) {
-	initContent := content.GetInitContentWithPlaceholders()
-	formattedDate := dates.ExtractShortDate(time.Now())
-	filledInitContent := fmt.Sprintf(initContent, formattedDate, formattedDate)
-	err := ioutil.WriteFile(config.Filename, []byte(filledInitContent), 0644)
-	if err != nil {
-		log.Fatal("Error ocurred writing content for init action: ", err)
-	}
-	log.Println(config.Filename + " created successfully with default TODOs and Completed")
-}
-
-func newDayAction(config *ToDoConfig) {
-	file, err := os.OpenFile(config.Filename, os.O_RDWR, 0666)
-	defer file.Close()
-
-	if err != nil {
-		log.Fatalf("failed opening file: %s", err)
-	}
-
-	stats, _ := file.Stat()
-	size := stats.Size()
-	log.Println("Size of file:", size)
-
-	contentContainingStr := content.FindSearchStr(file, size, config.SearchStr)
-	dateStr, err := dates.FindDate(contentContainingStr)
-	if err != nil {
-		panic("Failed to find date in content")
-	}
-
-	var datetime time.Time
-
-	if config.UseTodayForNewDay {
-		datetime = dates.Today()
-	} else {
-
-		datetime, err = dates.ConvertToTime(dateStr)
-		if err != nil {
-			panic("Failed to convert date to time format")
-		}
-		datetime = dates.AddDays(datetime, config.DaysToAdd)
-	}
-
-	newDateStr := dates.ExtractShortDate(datetime)
-	newContent := strings.ReplaceAll(contentContainingStr, dateStr, newDateStr)
-	log.Println("Content updated with new date")
-
-	scanner := bufio.NewScanner(strings.NewReader(newContent))
-	scanner.Split(bufio.ScanLines)
-	strFound := false
-	readAfterFound := 0
-	var take []string
-	for scanner.Scan() {
-		output := scanner.Text()
-		strFound = strings.Contains(output, "Completed")
-		take = append(take, output)
-		if strFound || readAfterFound > 0 {
-			readAfterFound++
-		}
-
-		if readAfterFound == 2 {
-			log.Println("Previous completed todos removed successfully")
-			break
-		}
-	}
-
-	file.Seek(0, 2)
-	_, err = file.Write([]byte("\n\n"))
-	if err != nil {
-		panic("Falied to write newlines to file")
-	}
-
-	_, err = file.Write([]byte(strings.Join(take, "\n")))
-	if err != nil {
-		panic("Falied to write new content to file")
-	}
-	log.Println("New day todos copied successfully")
-}
-
-func newTodoAction(config *ToDoConfig, todo string) {
-	file, err := os.OpenFile(config.Filename, os.O_RDWR, 0666)
-	defer file.Close()
-
-	if err != nil {
-		log.Fatalf("failed opening file: %s", err)
-	}
-
-	stats, _ := file.Stat()
-	size := stats.Size()
-	log.Println("Size of file:", size)
-
-	contentContainingStr := content.FindSearchStr(file, size, "Completed")
-	contentSize := len(contentContainingStr)
-	log.Println("Position found:", contentSize)
-	// Account for newline
-	contentSize += 1
-
-	writingPos := size - int64(contentSize)
-	file.Seek(writingPos, 0)
-	_, err = file.Write([]byte(todo))
-	if err != nil {
-		panic("Falied to write new item to file")
-	}
-
-	_, err = file.Write([]byte("\n\n"))
-	if err != nil {
-		panic("Falied to write new line to file")
-	}
-
-	_, err = file.Write([]byte(contentContainingStr))
-	if err != nil {
-		panic("Falied to write original content to file")
-	}
-	log.Println("New todo item added successfully")
-}
-
-func todaysTodosAction(config *ToDoConfig) {
-	file, err := os.OpenFile(config.Filename, os.O_RDWR, 0666)
-	defer file.Close()
-
-	if err != nil {
-		log.Fatalf("failed opening file: %s", err)
-	}
-
-	stats, _ := file.Stat()
-	size := stats.Size()
-	log.Println("Size of file:", size)
-
-	contentContainingStr := content.FindSearchStr(file, size, config.SearchStr)
-	organisedContent := content.NewOrganisedContent(contentContainingStr)
-
-	fmt.Println("")
-	display.PrintWithIndent(organisedContent, content.ALL)
-	fmt.Println("")
-}
-
-func completeTodoAction(config *ToDoConfig, includeEdit bool) {
-	file, err := os.OpenFile(config.Filename, os.O_RDWR, 0666)
-	defer file.Close()
-
-	if err != nil {
-		log.Fatalf("failed opening file: %s", err)
-	}
-
-	stats, _ := file.Stat()
-	size := stats.Size()
-	log.Println("Size of file:", size)
-
-	contentContainingStr := content.FindSearchStr(file, size, config.SearchStr)
-	fmt.Println("")
-	organisedContent := content.NewOrganisedContent(contentContainingStr)
-
-	display.PrintWithIndent(organisedContent, content.TODOS)
-	response := display.AcceptInput("Enter TODO number for completion: ")
-	i, err := strconv.Atoi(response)
-	if err != nil {
-		panic(err)
-	}
-
-	var edit string = ""
-	if includeEdit {
-		edit = display.AcceptInput("Enter edition: ")
-	}
-
-	organisedContent.CompleteTODO(i, edit)
-	organisedContent.MergeContent()
-
-	writingPos := size - int64(len(contentContainingStr))
-	file.Seek(writingPos, 0)
-	_, err = file.Write([]byte(organisedContent.MergedContent))
-	if err != nil {
-		panic("Falied to write updated content to file")
-	}
-	log.Println("Updated content written to file successfully")
-}
-
-func moveTodoAction(config *ToDoConfig) {
-	file, err := os.OpenFile(config.Filename, os.O_RDWR, 0666)
-	defer file.Close()
-
-	if err != nil {
-		log.Fatalf("failed opening file: %s", err)
-	}
-
-	stats, _ := file.Stat()
-	size := stats.Size()
-	log.Println("Size of file:", size)
-
-	contentContainingStr := content.FindSearchStr(file, size, config.SearchStr)
-	fmt.Println("")
-	organisedContent := content.NewOrganisedContent(contentContainingStr)
-
-	display.PrintWithIndent(organisedContent, content.TODOS)
-	response := display.AcceptInput("Enter TODO number for move followed by number for new position: ")
-	entries := strings.Fields(response)
-	item, err := strconv.Atoi(entries[0])
-	if err != nil {
-		panic(err)
-	}
-	newPosition, err := strconv.Atoi(entries[1])
-	if err != nil {
-		panic(err)
-	}
-
-	organisedContent.MoveTODO(item, newPosition)
-	organisedContent.MergeContent()
-
-	writingPos := size - int64(len(contentContainingStr))
-	file.Seek(writingPos, 0)
-	_, err = file.Write([]byte(organisedContent.MergedContent))
-	if err != nil {
-		panic("Falied to write updated content to file")
-	}
-	log.Println("Updated content written to file successfully")
-}
-
-func mergeTodoAction(config *ToDoConfig) {
-	file, err := os.OpenFile(config.Filename, os.O_RDWR, 0666)
-	defer file.Close()
-
-	if err != nil {
-		log.Fatalf("failed opening file: %s", err)
-	}
-
-	stats, _ := file.Stat()
-	size := stats.Size()
-	log.Println("Size of file:", size)
-
-	contentContainingStr := content.FindSearchStr(file, size, config.SearchStr)
-	fmt.Println("")
-	organisedContent := content.NewOrganisedContent(contentContainingStr)
-
-	display.PrintWithIndent(organisedContent, content.TODOS)
-	response := display.AcceptInput("Enter TODO number for merge followed by TODO number to merge with: ")
-	entries := strings.Fields(response)
-	item, err := strconv.Atoi(entries[0])
-	if err != nil {
-		panic(err)
-	}
-	mergeWith, err := strconv.Atoi(entries[1])
-	if err != nil {
-		panic(err)
-	}
-
-	organisedContent.MergeTODOs(item, mergeWith)
-	organisedContent.MergeContent()
-
-	writingPos := size - int64(len(contentContainingStr))
-	file.Seek(writingPos, 0)
-	_, err = file.Write([]byte(organisedContent.MergedContent))
-	if err != nil {
-		panic("Falied to write updated content to file")
-	}
-	log.Println("Updated content written to file successfully")
 }

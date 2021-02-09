@@ -6,18 +6,16 @@ import (
 	"log"
 )
 
-var actionMap map[string]ConfigFunc
+var actionMap map[string]Action
 
 func init() {
 	config := LoadConfig()
-	actionMap = make(map[string]ConfigFunc)
-	actionMap["init"] = initActionMakeup(config)
-	actionMap["newday"] = newDayActionMakeup(config)
-	actionMap["newtodo"] = newTodoActionMakeup(config)
-	actionMap["today"] = todaysTodosActionMakeup(config)
-	actionMap["complete"] = completeTodoActionMakeup(config)
-	actionMap["move"] = moveTodoActionMakeup(config)
-	actionMap["merge"] = mergeTodoActionMakeup(config)
+	actionMap = make(map[string]Action)
+	actionMap["list"] = showTasks(config)
+	actionMap["add"] = newTask(config)
+	actionMap["complete"] = completeTask(config)
+	actionMap["move"] = moveTask(config)
+	actionMap["merge"] = mergeTasks(config)
 }
 
 func Process(args []string) {
