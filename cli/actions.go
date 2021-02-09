@@ -12,7 +12,7 @@ import (
 	"time"
 
 	"encoding/json"
-	t "github.com/davecremins/ToDo-Manager/todos"
+	t "github.com/davecremins/ToDo-Manager/tasks"
 	"github.com/fatih/color"
 	"github.com/rodaine/table"
 )
