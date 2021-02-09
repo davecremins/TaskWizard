@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-type ToDo struct {
+type Task struct {
 	Item        string
 	DateCreated time.Time
 }
@@ -18,12 +18,12 @@ type Done struct {
 }
 
 type Data struct {
-	ToDos     []ToDo `json:"todos"`
+	Tasks     []Task `json:"tasks"`
 	Completed []Done `json:"completed"`
 }
 
-func (d *Data) AddNewToDo(todo ToDo) {
-	d.ToDos = append(d.ToDos, todo)
+func (d *Data) AddNewTask(task Task) {
+	d.Tasks = append(d.Tasks, task)
 }
 
 func (d *Data) AddCompletedItem(item Done) {
@@ -31,7 +31,7 @@ func (d *Data) AddCompletedItem(item Done) {
 }
 
 func (d *Data) CompleteTask(taskNum int, taskComment string) {
-	taskCount := len(d.ToDos)
+	taskCount := len(d.Tasks)
 	if taskCount == 0 {
 		panic("No task to complete")
 	}
@@ -41,14 +41,14 @@ func (d *Data) CompleteTask(taskNum int, taskComment string) {
 
 	// Account for slice index
 	realIndex := taskNum - 1
-	task := d.ToDos[realIndex]
+	task := d.Tasks[realIndex]
 	completedTask := Done{Item: task.Item, DateCreated: task.DateCreated, DateCompleted: time.Now(), Comment: taskComment}
 	d.AddCompletedItem(completedTask)
-	d.ToDos = append(d.ToDos[:realIndex], d.ToDos[realIndex+1:]...)
+	d.Tasks = append(d.Tasks[:realIndex], d.Tasks[realIndex+1:]...)
 }
 
 func (d *Data) MoveTask(taskNum, newPosition int) {
-	taskcount := len(d.ToDos)
+	taskcount := len(d.Tasks)
 	if taskcount == 0 {
 		panic("no tasks to move")
 	}
@@ -67,18 +67,18 @@ func (d *Data) MoveTask(taskNum, newPosition int) {
 
 	// Account for slice index
 	realIndex := taskNum - 1
-	task := d.ToDos[realIndex]
-	copy(d.ToDos[realIndex:], d.ToDos[realIndex+1:])
-	d.ToDos = d.ToDos[:len(d.ToDos)-1]
+	task := d.Tasks[realIndex]
+	copy(d.Tasks[realIndex:], d.Tasks[realIndex+1:])
+	d.Tasks = d.Tasks[:len(d.Tasks)-1]
 	realIndexForNewPosition := newPosition - 1
-	emptyTask := ToDo{}
-	d.ToDos = append(d.ToDos, emptyTask)
-	copy(d.ToDos[realIndexForNewPosition+1:], d.ToDos[realIndexForNewPosition:])
-	d.ToDos[realIndexForNewPosition] = task
+	emptyTask := Task{}
+	d.Tasks = append(d.Tasks, emptyTask)
+	copy(d.Tasks[realIndexForNewPosition+1:], d.Tasks[realIndexForNewPosition:])
+	d.Tasks[realIndexForNewPosition] = task
 }
 
 func (d *Data) MergeTasks(taskNum, mergeWith int) {
-	taskcount := len(d.ToDos)
+	taskcount := len(d.Tasks)
 	if taskcount == 0 {
 		panic("no tasks to merge")
 	}
@@ -96,11 +96,11 @@ func (d *Data) MergeTasks(taskNum, mergeWith int) {
 	}
 
 	realIndex := taskNum - 1
-	taskToMerge := d.ToDos[realIndex]
+	taskToMerge := d.Tasks[realIndex]
 
 	realIndexForTaskToMergeWith := mergeWith - 1
-	mergingTask := d.ToDos[realIndexForTaskToMergeWith]
-	mergedTask := ToDo{Item: fmt.Sprintf("%s%s%s", mergingTask.Item, " - ", taskToMerge.Item), DateCreated: mergingTask.DateCreated}
-	d.ToDos[realIndexForTaskToMergeWith] = mergedTask
-	d.ToDos = append(d.ToDos[:realIndex], d.ToDos[realIndex+1:]...)
+	mergingTask := d.Tasks[realIndexForTaskToMergeWith]
+	mergedTask := Task{Item: fmt.Sprintf("%s%s%s", mergingTask.Item, " - ", taskToMerge.Item), DateCreated: mergingTask.DateCreated}
+	d.Tasks[realIndexForTaskToMergeWith] = mergedTask
+	d.Tasks = append(d.Tasks[:realIndex], d.Tasks[realIndex+1:]...)
 }

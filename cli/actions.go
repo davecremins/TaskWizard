@@ -59,10 +59,10 @@ func showTasks(config *ToDoConfig) Action {
 		headerFmt := color.New(color.FgGreen, color.Underline).SprintfFunc()
 		columnFmt := color.New(color.FgYellow).SprintfFunc()
 
-		tbl := table.New("No.", "ToDo", "Added")
+		tbl := table.New("No.", "Task", "Added")
 		tbl.WithHeaderFormatter(headerFmt).WithFirstColumnFormatter(columnFmt)
-		for i, todo := range data.ToDos {
-			tbl.AddRow(i+1, todo.Item, todo.DateCreated)
+		for i, task := range data.Tasks {
+			tbl.AddRow(i+1, task.Item, task.DateCreated)
 		}
 		tbl.Print()
 	}
@@ -93,8 +93,8 @@ func newTask(config *ToDoConfig) Action {
 		}
 
 		newTaskCmd.Parse(args[2:])
-		newTask := t.ToDo{Item: *task, DateCreated: time.Now()}
-		data.AddNewToDo(newTask)
+		newTask := t.Task{Item: *task, DateCreated: time.Now()}
+		data.AddNewTask(newTask)
 
 		file, _ := os.OpenFile("data.json", os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0666)
 		encoder := json.NewEncoder(file)
@@ -139,8 +139,8 @@ func completeTask(config *ToDoConfig) Action {
 
 		tbl := table.New("No.", "Task", "Created")
 		tbl.WithHeaderFormatter(headerFmt).WithFirstColumnFormatter(columnFmt)
-		for i, todo := range data.ToDos {
-			tbl.AddRow(i+1, todo.Item, todo.DateCreated)
+		for i, task := range data.Tasks {
+			tbl.AddRow(i+1, task.Item, task.DateCreated)
 		}
 		tbl.Print()
 
@@ -200,8 +200,8 @@ func moveTask(config *ToDoConfig) Action {
 
 		tbl := table.New("No.", "Task", "Created")
 		tbl.WithHeaderFormatter(headerFmt).WithFirstColumnFormatter(columnFmt)
-		for i, todo := range data.ToDos {
-			tbl.AddRow(i+1, todo.Item, todo.DateCreated)
+		for i, task := range data.Tasks {
+			tbl.AddRow(i+1, task.Item, task.DateCreated)
 		}
 		tbl.Print()
 
@@ -263,8 +263,8 @@ func mergeTasks(config *ToDoConfig) Action {
 
 		tbl := table.New("No.", "Task", "Created")
 		tbl.WithHeaderFormatter(headerFmt).WithFirstColumnFormatter(columnFmt)
-		for i, todo := range data.ToDos {
-			tbl.AddRow(i+1, todo.Item, todo.DateCreated)
+		for i, task := range data.Tasks {
+			tbl.AddRow(i+1, task.Item, task.DateCreated)
 		}
 		tbl.Print()
 
