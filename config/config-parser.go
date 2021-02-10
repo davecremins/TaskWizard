@@ -7,7 +7,7 @@ import (
 )
 
 type TaskConfig struct {
-	Filename string `yaml:"filename"`
+	Filename  string `yaml:"filename"`
 	DataStore string
 }
 

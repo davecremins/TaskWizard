@@ -42,6 +42,7 @@ func setupLogger() {
 }
 
 func createConfig() {
+	// TODO: Need serious tidy up
 	if _, err := os.Stat(userDirForConfig); os.IsNotExist(err) {
 		log.Println("Required directory missing")
 		err := os.Mkdir(userDirForConfig, 0755)
@@ -52,13 +53,15 @@ func createConfig() {
 		err = SaveConfig(*defaultConfig, fullPathToConfigFile())
 		checkError(err)
 		log.Println(CONFIG_NAME + " configuration created successfully")
-		f, err := os.Create(userDirForConfig + "/" +  defaultConfig.Filename)
+		f, err := os.Create(userDirForConfig + "/" + defaultConfig.Filename)
 		checkError(err)
+		log.Println(defaultConfig.Filename + " configuration created successfully")
 		f.Close()
 	}
 }
 
 func LoadConfig() *TaskConfig {
+	// TODO: Need serious tidy up
 	config := GetConfig(fullPathToConfigFile())
 	config.DataStore = userDirForConfig + "/" + config.Filename
 	return config
