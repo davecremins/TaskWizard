@@ -6,15 +6,13 @@ import (
 	"log"
 )
 
-type ToDoConfig struct {
-	Filename          string `yaml:"filename"`
-	SearchStr         string `yaml:"searchstr"`
-	DaysToAdd         int    `yaml:"daysToAdd"`
-	UseTodayForNewDay bool   `yaml:"useTodayForNewDay"`
+type TaskConfig struct {
+	Filename string `yaml:"filename"`
+	DataStore string
 }
 
-func GetConfig(filename string) *ToDoConfig {
-	var c *ToDoConfig
+func GetConfig(filename string) *TaskConfig {
+	var c *TaskConfig
 	yamlFile, err := ioutil.ReadFile(filename)
 	if err != nil {
 		log.Fatalf("failed reading file: %s", err)
@@ -27,7 +25,7 @@ func GetConfig(filename string) *ToDoConfig {
 	return c
 }
 
-func SaveConfig(config ToDoConfig, filename string) error {
+func SaveConfig(config TaskConfig, filename string) error {
 	bytes, err := yaml.Marshal(config)
 	if err != nil {
 		log.Fatalf("Marshaling error: %s", err)
@@ -36,11 +34,8 @@ func SaveConfig(config ToDoConfig, filename string) error {
 	return ioutil.WriteFile(filename, bytes, 0644)
 }
 
-func NewDefault() *ToDoConfig {
-	return &ToDoConfig{
-		Filename:          "TODOs.txt",
-		SearchStr:         "TODOs",
-		DaysToAdd:         1,
-		UseTodayForNewDay: false,
+func NewDefault() *TaskConfig {
+	return &TaskConfig{
+		Filename: "taskWizardData.json",
 	}
 }

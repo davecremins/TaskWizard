@@ -33,9 +33,9 @@ func printDefaults() {
 	}
 }
 
-func showTasks(config *ToDoConfig) Action {
+func showTasks(config *TaskConfig) Action {
 	action := func(args []string) {
-		jsonFile, err := os.Open("data.json")
+		jsonFile, err := os.Open(config.DataStore)
 		defer jsonFile.Close()
 		if err != nil {
 			log.Fatalf("failed opening file: %s", err)
@@ -69,11 +69,11 @@ func showTasks(config *ToDoConfig) Action {
 	return action
 }
 
-func newTask(config *ToDoConfig) Action {
+func newTask(config *TaskConfig) Action {
 	newTaskCmd := flag.NewFlagSet("add", flag.ExitOnError)
 	task := newTaskCmd.String("desc", "New task placeholder", "Description of new task")
 	action := func(args []string) {
-		jsonFile, err := os.Open("data.json")
+		jsonFile, err := os.Open(config.DataStore)
 		defer jsonFile.Close()
 		if err != nil {
 			log.Fatalf("failed opening file: %s", err)
@@ -96,7 +96,7 @@ func newTask(config *ToDoConfig) Action {
 		newTask := t.Task{Item: *task, DateCreated: time.Now()}
 		data.AddNewTask(newTask)
 
-		file, _ := os.OpenFile("data.json", os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0666)
+		file, _ := os.OpenFile(config.DataStore, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0666)
 		encoder := json.NewEncoder(file)
 		encoder.Encode(data)
 		file.Close()
@@ -108,12 +108,12 @@ func newTask(config *ToDoConfig) Action {
 	return action
 }
 
-func completeTask(config *ToDoConfig) Action {
+func completeTask(config *TaskConfig) Action {
 	completeCmd := flag.NewFlagSet("complete", flag.ExitOnError)
 	includeComment := completeCmd.Bool("comment", false, "Option to include comment for task before completion")
 	action := func(args []string) {
 		completeCmd.Parse(args[2:])
-		jsonFile, err := os.Open("data.json")
+		jsonFile, err := os.Open(config.DataStore)
 		defer jsonFile.Close()
 		if err != nil {
 			log.Fatalf("failed opening file: %s", err)
@@ -160,7 +160,7 @@ func completeTask(config *ToDoConfig) Action {
 
 		data.CompleteTask(i, comment)
 
-		file, _ := os.OpenFile("data.json", os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0666)
+		file, _ := os.OpenFile(config.DataStore, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0666)
 		encoder := json.NewEncoder(file)
 		encoder.Encode(data)
 		file.Close()
@@ -171,10 +171,10 @@ func completeTask(config *ToDoConfig) Action {
 	return action
 }
 
-func moveTask(config *ToDoConfig) Action {
+func moveTask(config *TaskConfig) Action {
 	moveCmd := flag.NewFlagSet("move", flag.ExitOnError)
 	action := func(args []string) {
-		jsonFile, err := os.Open("data.json")
+		jsonFile, err := os.Open(config.DataStore)
 		defer jsonFile.Close()
 		if err != nil {
 			log.Fatalf("failed opening file: %s", err)
@@ -221,7 +221,7 @@ func moveTask(config *ToDoConfig) Action {
 
 		data.MoveTask(taskNum, newPosition)
 
-		file, _ := os.OpenFile("data.json", os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0666)
+		file, _ := os.OpenFile(config.DataStore, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0666)
 		encoder := json.NewEncoder(file)
 		encoder.Encode(data)
 		file.Close()
@@ -233,11 +233,11 @@ func moveTask(config *ToDoConfig) Action {
 
 }
 
-func mergeTasks(config *ToDoConfig) Action {
+func mergeTasks(config *TaskConfig) Action {
 	mergeCmd := flag.NewFlagSet("merge", flag.ExitOnError)
 	action := func(args []string) {
 
-		jsonFile, err := os.Open("data.json")
+		jsonFile, err := os.Open(config.DataStore)
 		defer jsonFile.Close()
 		if err != nil {
 			log.Fatalf("failed opening file: %s", err)
@@ -283,7 +283,7 @@ func mergeTasks(config *ToDoConfig) Action {
 		}
 
 		data.MergeTasks(item, mergeWith)
-		file, _ := os.OpenFile("data.json", os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0666)
+		file, _ := os.OpenFile(config.DataStore, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0666)
 		encoder := json.NewEncoder(file)
 		encoder.Encode(data)
 		file.Close()
