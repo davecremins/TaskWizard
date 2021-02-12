@@ -46,6 +46,13 @@ func persistToDataStore(dataStore string, data *t.Data) {
 	file.Close()
 }
 
+func decode(file *os.File, data *t.Data) {
+	decoder := json.NewDecoder(file)
+	if err := decoder.Decode(data); err != nil {
+		log.Panicf("Decode issue: %s", err)
+	}
+}
+
 func showTasks(config *TaskConfig) Action {
 	showTaskCmd := flag.NewFlagSet("list", flag.ExitOnError)
 	action := func(args []string) {
@@ -58,13 +65,8 @@ func showTasks(config *TaskConfig) Action {
 			return
 		}
 
-		decoder := json.NewDecoder(jsonFile)
-
 		data := new(t.Data)
-		if err := decoder.Decode(data); err != nil {
-			log.Panicf("Decode issue: %s", err)
-		}
-
+		decode(jsonFile, data)
 		display.Show(data)
 	}
 	addFlagSetDefault(showTaskCmd.Usage)
@@ -83,10 +85,7 @@ func newTask(config *TaskConfig) Action {
 		if size == 0 {
 			log.Println("Data file is empty, no decode required")
 		} else {
-			decoder := json.NewDecoder(jsonFile)
-			if err := decoder.Decode(data); err != nil {
-				log.Panicf("Decode issue: %s", err)
-			}
+			decode(jsonFile, data)
 		}
 
 		newTaskCmd.Parse(args[2:])
@@ -114,12 +113,8 @@ func completeTask(config *TaskConfig) Action {
 			return
 		}
 
-		decoder := json.NewDecoder(jsonFile)
-
 		data := new(t.Data)
-		if err := decoder.Decode(data); err != nil {
-			log.Panicf("Decode issue: %s", err)
-		}
+		decode(jsonFile, data)
 
 		display.Show(data)
 		fmt.Println("")
@@ -156,12 +151,8 @@ func moveTask(config *TaskConfig) Action {
 			return
 		}
 
-		decoder := json.NewDecoder(jsonFile)
-
 		data := new(t.Data)
-		if err := decoder.Decode(data); err != nil {
-			log.Panicf("Decode issue: %s", err)
-		}
+		decode(jsonFile, data)
 
 		display.Show(data)
 		fmt.Println("")
@@ -199,12 +190,8 @@ func mergeTasks(config *TaskConfig) Action {
 			return
 		}
 
-		decoder := json.NewDecoder(jsonFile)
-
 		data := new(t.Data)
-		if err := decoder.Decode(data); err != nil {
-			log.Panicf("Decode issue: %s", err)
-		}
+		decode(jsonFile, data)
 
 		display.Show(data)
 		fmt.Println("")
@@ -227,5 +214,4 @@ func mergeTasks(config *TaskConfig) Action {
 	}
 	addFlagSetDefault(mergeCmd.Usage)
 	return action
-
 }

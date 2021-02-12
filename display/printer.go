@@ -3,10 +3,10 @@ package display
 import (
 	"bufio"
 	"fmt"
-	"os"
 	t "github.com/davecremins/TaskWizard/tasks"
 	"github.com/fatih/color"
 	"github.com/rodaine/table"
+	"os"
 )
 
 const indentLevel = 8
