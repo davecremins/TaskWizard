@@ -34,6 +34,7 @@ func printDefaults() {
 }
 
 func showTasks(config *TaskConfig) Action {
+	showTaskCmd := flag.NewFlagSet("list", flag.ExitOnError)
 	action := func(args []string) {
 		jsonFile, err := os.Open(config.DataStore)
 		defer jsonFile.Close()
@@ -66,6 +67,7 @@ func showTasks(config *TaskConfig) Action {
 		}
 		tbl.Print()
 	}
+	addFlagSetDefault(showTaskCmd.Usage)
 	return action
 }
 
