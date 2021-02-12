@@ -33,15 +33,19 @@ func printDefaults() {
 	}
 }
 
+func getDataStore(dataStore string) *os.File {
+	jsonFile, err := os.Open(dataStore)
+	if err != nil {
+		log.Fatalf("failed opening file: %s", err)
+	}
+	return jsonFile
+}
+
 func showTasks(config *TaskConfig) Action {
 	showTaskCmd := flag.NewFlagSet("list", flag.ExitOnError)
 	action := func(args []string) {
-		jsonFile, err := os.Open(config.DataStore)
+		jsonFile := getDataStore(config.DataStore)
 		defer jsonFile.Close()
-		if err != nil {
-			log.Fatalf("failed opening file: %s", err)
-		}
-
 		stats, _ := jsonFile.Stat()
 		size := stats.Size()
 		if size == 0 {
@@ -52,7 +56,7 @@ func showTasks(config *TaskConfig) Action {
 		decoder := json.NewDecoder(jsonFile)
 
 		data := new(t.Data)
-		if err = decoder.Decode(data); err != nil {
+		if err := decoder.Decode(data); err != nil {
 			log.Panicf("Decode issue: %s", err)
 		}
 
@@ -75,21 +79,16 @@ func newTask(config *TaskConfig) Action {
 	newTaskCmd := flag.NewFlagSet("add", flag.ExitOnError)
 	task := newTaskCmd.String("desc", "New task placeholder", "Description of new task")
 	action := func(args []string) {
-		jsonFile, err := os.Open(config.DataStore)
+		jsonFile := getDataStore(config.DataStore)
 		defer jsonFile.Close()
-		if err != nil {
-			log.Fatalf("failed opening file: %s", err)
-		}
-
-		data := new(t.Data)
-
 		stats, _ := jsonFile.Stat()
 		size := stats.Size()
+		data := new(t.Data)
 		if size == 0 {
 			log.Println("Data file is empty, no decode required")
 		} else {
 			decoder := json.NewDecoder(jsonFile)
-			if err = decoder.Decode(data); err != nil {
+			if err := decoder.Decode(data); err != nil {
 				log.Panicf("Decode issue: %s", err)
 			}
 		}
@@ -115,12 +114,8 @@ func completeTask(config *TaskConfig) Action {
 	includeComment := completeCmd.Bool("comment", false, "Option to include comment for task before completion")
 	action := func(args []string) {
 		completeCmd.Parse(args[2:])
-		jsonFile, err := os.Open(config.DataStore)
+		jsonFile := getDataStore(config.DataStore)
 		defer jsonFile.Close()
-		if err != nil {
-			log.Fatalf("failed opening file: %s", err)
-		}
-
 		stats, _ := jsonFile.Stat()
 		size := stats.Size()
 		if size == 0 {
@@ -131,7 +126,7 @@ func completeTask(config *TaskConfig) Action {
 		decoder := json.NewDecoder(jsonFile)
 
 		data := new(t.Data)
-		if err = decoder.Decode(data); err != nil {
+		if err := decoder.Decode(data); err != nil {
 			log.Panicf("Decode issue: %s", err)
 		}
 
@@ -176,12 +171,8 @@ func completeTask(config *TaskConfig) Action {
 func moveTask(config *TaskConfig) Action {
 	moveCmd := flag.NewFlagSet("move", flag.ExitOnError)
 	action := func(args []string) {
-		jsonFile, err := os.Open(config.DataStore)
+		jsonFile := getDataStore(config.DataStore)
 		defer jsonFile.Close()
-		if err != nil {
-			log.Fatalf("failed opening file: %s", err)
-		}
-
 		stats, _ := jsonFile.Stat()
 		size := stats.Size()
 		if size == 0 {
@@ -192,7 +183,7 @@ func moveTask(config *TaskConfig) Action {
 		decoder := json.NewDecoder(jsonFile)
 
 		data := new(t.Data)
-		if err = decoder.Decode(data); err != nil {
+		if err := decoder.Decode(data); err != nil {
 			log.Panicf("Decode issue: %s", err)
 		}
 
@@ -238,12 +229,8 @@ func moveTask(config *TaskConfig) Action {
 func mergeTasks(config *TaskConfig) Action {
 	mergeCmd := flag.NewFlagSet("merge", flag.ExitOnError)
 	action := func(args []string) {
-
-		jsonFile, err := os.Open(config.DataStore)
+		jsonFile := getDataStore(config.DataStore)
 		defer jsonFile.Close()
-		if err != nil {
-			log.Fatalf("failed opening file: %s", err)
-		}
 
 		stats, _ := jsonFile.Stat()
 		size := stats.Size()
@@ -255,7 +242,7 @@ func mergeTasks(config *TaskConfig) Action {
 		decoder := json.NewDecoder(jsonFile)
 
 		data := new(t.Data)
-		if err = decoder.Decode(data); err != nil {
+		if err := decoder.Decode(data); err != nil {
 			log.Panicf("Decode issue: %s", err)
 		}
 
