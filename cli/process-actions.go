@@ -16,6 +16,7 @@ func init() {
 	actionMap["complete"] = completeTask(config)
 	actionMap["move"] = moveTask(config)
 	actionMap["merge"] = mergeTasks(config)
+	actionMap["import"] = importTasks(config)
 }
 
 func Process(args []string) {

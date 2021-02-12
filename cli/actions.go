@@ -2,6 +2,7 @@ package actions
 
 import (
 	"flag"
+	"bufio"
 	"fmt"
 	. "github.com/davecremins/TaskWizard/config"
 	"github.com/davecremins/TaskWizard/display"
@@ -202,5 +203,48 @@ func mergeTasks(config *TaskConfig) Action {
 		log.Println("Task merged successfully")
 	}
 	addFlagSetDefault(mergeCmd.Usage)
+	return action
+}
+
+func importTasks(config *TaskConfig) Action {
+	importCmd := flag.NewFlagSet("import", flag.ExitOnError)
+	importFilePath := importCmd.String("file", "", "Path to file containing tasks to import")
+	action := func(args []string) {
+		importCmd.Parse(args[2:])
+		if *importFilePath == "" {
+			log.Println("Import action needs a path to the file containing tasks")
+			return
+		}
+		jsonFile, size := getDataStore(config.DataStore)
+		defer jsonFile.Close()
+		data := new(t.Data)
+		if size == 0 {
+			log.Println("Data file is empty, no tasks to complete")
+		} else {
+			decode(jsonFile, data)
+		}
+
+		// TODO: Import line by line and create new task
+		file, err := os.Open(*importFilePath)
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer file.Close()
+
+		imported := 0
+		scanner := bufio.NewScanner(file)
+		for scanner.Scan() {
+			data.AddNewTask(t.Task{Item: scanner.Text(), DateCreated: time.Now()})
+			imported++
+		}
+
+		if err := scanner.Err(); err != nil {
+			log.Fatal(err)
+		}
+		persistToDataStore(config.DataStore, data)
+		msg := fmt.Sprintf("%d tasks imported successfully", imported)
+		log.Println(msg)
+	}
+	addFlagSetDefault(importCmd.Usage)
 	return action
 }

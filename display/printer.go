@@ -12,7 +12,7 @@ import (
 const indentLevel = 8
 
 var (
-	indentStr string
+	indentStr    string
 	headerFormat table.Formatter
 	columnFormat table.Formatter
 )
