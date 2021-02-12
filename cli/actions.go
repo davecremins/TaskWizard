@@ -31,12 +31,14 @@ func printDefaults() {
 	}
 }
 
-func getDataStore(dataStore string) *os.File {
+func getDataStore(dataStore string) (*os.File, int64) {
 	jsonFile, err := os.Open(dataStore)
 	if err != nil {
 		log.Fatalf("failed opening file: %s", err)
 	}
-	return jsonFile
+	stats, _ := jsonFile.Stat()
+	size := stats.Size()
+	return jsonFile, size
 }
 
 func persistToDataStore(dataStore string, data *t.Data) {
@@ -56,15 +58,12 @@ func decode(file *os.File, data *t.Data) {
 func showTasks(config *TaskConfig) Action {
 	showTaskCmd := flag.NewFlagSet("list", flag.ExitOnError)
 	action := func(args []string) {
-		jsonFile := getDataStore(config.DataStore)
+		jsonFile, size := getDataStore(config.DataStore)
 		defer jsonFile.Close()
-		stats, _ := jsonFile.Stat()
-		size := stats.Size()
 		if size == 0 {
 			log.Println("Data file is empty, no tasks to show")
 			return
 		}
-
 		data := new(t.Data)
 		decode(jsonFile, data)
 		display.Show(data)
@@ -77,10 +76,8 @@ func newTask(config *TaskConfig) Action {
 	newTaskCmd := flag.NewFlagSet("add", flag.ExitOnError)
 	task := newTaskCmd.String("desc", "New task placeholder", "Description of new task")
 	action := func(args []string) {
-		jsonFile := getDataStore(config.DataStore)
+		jsonFile, size := getDataStore(config.DataStore)
 		defer jsonFile.Close()
-		stats, _ := jsonFile.Stat()
-		size := stats.Size()
 		data := new(t.Data)
 		if size == 0 {
 			log.Println("Data file is empty, no decode required")
@@ -93,7 +90,6 @@ func newTask(config *TaskConfig) Action {
 		data.AddNewTask(newTask)
 		persistToDataStore(config.DataStore, data)
 		log.Println("New task added successfully")
-
 	}
 	addFlagSetDefault(newTaskCmd.Usage)
 	return action
@@ -104,10 +100,8 @@ func completeTask(config *TaskConfig) Action {
 	includeComment := completeCmd.Bool("comment", false, "Option to include comment for task before completion")
 	action := func(args []string) {
 		completeCmd.Parse(args[2:])
-		jsonFile := getDataStore(config.DataStore)
+		jsonFile, size := getDataStore(config.DataStore)
 		defer jsonFile.Close()
-		stats, _ := jsonFile.Stat()
-		size := stats.Size()
 		if size == 0 {
 			log.Println("Data file is empty, no tasks to complete")
 			return
@@ -142,10 +136,8 @@ func completeTask(config *TaskConfig) Action {
 func moveTask(config *TaskConfig) Action {
 	moveCmd := flag.NewFlagSet("move", flag.ExitOnError)
 	action := func(args []string) {
-		jsonFile := getDataStore(config.DataStore)
+		jsonFile, size := getDataStore(config.DataStore)
 		defer jsonFile.Close()
-		stats, _ := jsonFile.Stat()
-		size := stats.Size()
 		if size == 0 {
 			log.Println("Data file is empty, no tasks to move")
 			return
@@ -180,11 +172,8 @@ func moveTask(config *TaskConfig) Action {
 func mergeTasks(config *TaskConfig) Action {
 	mergeCmd := flag.NewFlagSet("merge", flag.ExitOnError)
 	action := func(args []string) {
-		jsonFile := getDataStore(config.DataStore)
+		jsonFile, size := getDataStore(config.DataStore)
 		defer jsonFile.Close()
-
-		stats, _ := jsonFile.Stat()
-		size := stats.Size()
 		if size == 0 {
 			log.Println("Data file is empty, no tasks to merge")
 			return

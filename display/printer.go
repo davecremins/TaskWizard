@@ -11,12 +11,18 @@ import (
 
 const indentLevel = 8
 
-var indentStr string
+var (
+	indentStr string
+	headerFormat table.Formatter
+	columnFormat table.Formatter
+)
 
 func init() {
 	for i := 0; i < indentLevel; i++ {
 		indentStr += " "
 	}
+	headerFormat = color.New(color.FgGreen, color.Underline).SprintfFunc()
+	columnFormat = color.New(color.FgYellow).SprintfFunc()
 }
 
 func AcceptInput(prompt string) string {
@@ -29,13 +35,12 @@ func AcceptInput(prompt string) string {
 }
 
 func Show(data *t.Data) {
-	headerFmt := color.New(color.FgGreen, color.Underline).SprintfFunc()
-	columnFmt := color.New(color.FgYellow).SprintfFunc()
-
+	fmt.Println()
 	tbl := table.New("No.", "Task", "Added")
-	tbl.WithHeaderFormatter(headerFmt).WithFirstColumnFormatter(columnFmt)
+	tbl.WithHeaderFormatter(headerFormat).WithFirstColumnFormatter(columnFormat)
 	for i, task := range data.Tasks {
 		tbl.AddRow(i+1, task.Item, task.DateCreated)
 	}
 	tbl.Print()
+	fmt.Println()
 }
