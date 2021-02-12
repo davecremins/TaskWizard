@@ -41,6 +41,13 @@ func getDataStore(dataStore string) *os.File {
 	return jsonFile
 }
 
+func persistToDataStore(dataStore string, data *t.Data) {
+	file, _ := os.OpenFile(dataStore, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0666)
+	encoder := json.NewEncoder(file)
+	encoder.Encode(data)
+	file.Close()
+}
+
 func showTasks(config *TaskConfig) Action {
 	showTaskCmd := flag.NewFlagSet("list", flag.ExitOnError)
 	action := func(args []string) {
@@ -96,12 +103,7 @@ func newTask(config *TaskConfig) Action {
 		newTaskCmd.Parse(args[2:])
 		newTask := t.Task{Item: *task, DateCreated: time.Now()}
 		data.AddNewTask(newTask)
-
-		file, _ := os.OpenFile(config.DataStore, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0666)
-		encoder := json.NewEncoder(file)
-		encoder.Encode(data)
-		file.Close()
-
+		persistToDataStore(config.DataStore, data)
 		log.Println("New task added successfully")
 
 	}
@@ -156,12 +158,7 @@ func completeTask(config *TaskConfig) Action {
 		}
 
 		data.CompleteTask(i, comment)
-
-		file, _ := os.OpenFile(config.DataStore, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0666)
-		encoder := json.NewEncoder(file)
-		encoder.Encode(data)
-		file.Close()
-
+		persistToDataStore(config.DataStore, data)
 		log.Println("Task completed successfully")
 	}
 	addFlagSetDefault(completeCmd.Usage)
@@ -213,12 +210,7 @@ func moveTask(config *TaskConfig) Action {
 		}
 
 		data.MoveTask(taskNum, newPosition)
-
-		file, _ := os.OpenFile(config.DataStore, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0666)
-		encoder := json.NewEncoder(file)
-		encoder.Encode(data)
-		file.Close()
-
+		persistToDataStore(config.DataStore, data)
 		log.Println("Task moved successfully")
 	}
 	addFlagSetDefault(moveCmd.Usage)
@@ -272,11 +264,7 @@ func mergeTasks(config *TaskConfig) Action {
 		}
 
 		data.MergeTasks(item, mergeWith)
-		file, _ := os.OpenFile(config.DataStore, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0666)
-		encoder := json.NewEncoder(file)
-		encoder.Encode(data)
-		file.Close()
-
+		persistToDataStore(config.DataStore, data)
 		log.Println("Task merged successfully")
 	}
 	addFlagSetDefault(mergeCmd.Usage)
