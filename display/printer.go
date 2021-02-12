@@ -4,6 +4,9 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	t "github.com/davecremins/TaskWizard/tasks"
+	"github.com/fatih/color"
+	"github.com/rodaine/table"
 )
 
 const indentLevel = 8
@@ -23,4 +26,16 @@ func AcceptInput(prompt string) string {
 	scanner.Scan()
 	text := scanner.Text()
 	return text
+}
+
+func Show(data *t.Data) {
+	headerFmt := color.New(color.FgGreen, color.Underline).SprintfFunc()
+	columnFmt := color.New(color.FgYellow).SprintfFunc()
+
+	tbl := table.New("No.", "Task", "Added")
+	tbl.WithHeaderFormatter(headerFmt).WithFirstColumnFormatter(columnFmt)
+	for i, task := range data.Tasks {
+		tbl.AddRow(i+1, task.Item, task.DateCreated)
+	}
+	tbl.Print()
 }

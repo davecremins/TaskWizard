@@ -13,8 +13,6 @@ import (
 
 	"encoding/json"
 	t "github.com/davecremins/TaskWizard/tasks"
-	"github.com/fatih/color"
-	"github.com/rodaine/table"
 )
 
 type Action func([]string)
@@ -67,16 +65,7 @@ func showTasks(config *TaskConfig) Action {
 			log.Panicf("Decode issue: %s", err)
 		}
 
-		// TODO: Move this into display package
-		headerFmt := color.New(color.FgGreen, color.Underline).SprintfFunc()
-		columnFmt := color.New(color.FgYellow).SprintfFunc()
-
-		tbl := table.New("No.", "Task", "Added")
-		tbl.WithHeaderFormatter(headerFmt).WithFirstColumnFormatter(columnFmt)
-		for i, task := range data.Tasks {
-			tbl.AddRow(i+1, task.Item, task.DateCreated)
-		}
-		tbl.Print()
+		display.Show(data)
 	}
 	addFlagSetDefault(showTaskCmd.Usage)
 	return action
@@ -132,17 +121,7 @@ func completeTask(config *TaskConfig) Action {
 			log.Panicf("Decode issue: %s", err)
 		}
 
-		// TODO: Move this into display package
-		headerFmt := color.New(color.FgGreen, color.Underline).SprintfFunc()
-		columnFmt := color.New(color.FgYellow).SprintfFunc()
-
-		tbl := table.New("No.", "Task", "Created")
-		tbl.WithHeaderFormatter(headerFmt).WithFirstColumnFormatter(columnFmt)
-		for i, task := range data.Tasks {
-			tbl.AddRow(i+1, task.Item, task.DateCreated)
-		}
-		tbl.Print()
-
+		display.Show(data)
 		fmt.Println("")
 		fmt.Println("")
 
@@ -184,17 +163,7 @@ func moveTask(config *TaskConfig) Action {
 			log.Panicf("Decode issue: %s", err)
 		}
 
-		// TODO: Move this into display package
-		headerFmt := color.New(color.FgGreen, color.Underline).SprintfFunc()
-		columnFmt := color.New(color.FgYellow).SprintfFunc()
-
-		tbl := table.New("No.", "Task", "Created")
-		tbl.WithHeaderFormatter(headerFmt).WithFirstColumnFormatter(columnFmt)
-		for i, task := range data.Tasks {
-			tbl.AddRow(i+1, task.Item, task.DateCreated)
-		}
-		tbl.Print()
-
+		display.Show(data)
 		fmt.Println("")
 		fmt.Println("")
 
@@ -215,7 +184,6 @@ func moveTask(config *TaskConfig) Action {
 	}
 	addFlagSetDefault(moveCmd.Usage)
 	return action
-
 }
 
 func mergeTasks(config *TaskConfig) Action {
@@ -238,17 +206,7 @@ func mergeTasks(config *TaskConfig) Action {
 			log.Panicf("Decode issue: %s", err)
 		}
 
-		// TODO: Move this into display package
-		headerFmt := color.New(color.FgGreen, color.Underline).SprintfFunc()
-		columnFmt := color.New(color.FgYellow).SprintfFunc()
-
-		tbl := table.New("No.", "Task", "Created")
-		tbl.WithHeaderFormatter(headerFmt).WithFirstColumnFormatter(columnFmt)
-		for i, task := range data.Tasks {
-			tbl.AddRow(i+1, task.Item, task.DateCreated)
-		}
-		tbl.Print()
-
+		display.Show(data)
 		fmt.Println("")
 		fmt.Println("")
 
