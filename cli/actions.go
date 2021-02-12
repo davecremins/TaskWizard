@@ -212,19 +212,15 @@ func importTasks(config *TaskConfig) Action {
 	action := func(args []string) {
 		importCmd.Parse(args[2:])
 		if *importFilePath == "" {
-			log.Println("Import action needs a path to the file containing tasks")
-			return
+			log.Fatal("Import action needs a path to the file containing tasks")
 		}
 		jsonFile, size := getDataStore(config.DataStore)
 		defer jsonFile.Close()
 		data := new(t.Data)
-		if size == 0 {
-			log.Println("Data file is empty, no tasks to complete")
-		} else {
+		if size != 0 {
 			decode(jsonFile, data)
 		}
 
-		// TODO: Import line by line and create new task
 		file, err := os.Open(*importFilePath)
 		if err != nil {
 			log.Fatal(err)

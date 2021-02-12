@@ -1,6 +1,9 @@
 package dates
 
-import "testing"
+import (
+	"testing"
+	"time"
+)
 
 func TestFindDate(t *testing.T) {
 	content := "Today's date is 18/12/2019"
@@ -46,6 +49,41 @@ func TestAddingDays(t *testing.T) {
 	shortDateStr := ExtractShortDate(datetime)
 	if expected != shortDateStr {
 		t.Errorf("AddDays failed, got %q, want %q", shortDateStr, expected)
+	}
+
+}
+
+func TestElapsedTime(t *testing.T) {
+	now := time.Now()
+	delta := now.Add(-time.Second * 10)
+	expected := "10 secs ago"
+	converted := ConvertToTimeElapsed(delta)
+	if expected != converted {
+		t.Errorf("Elapsed time failed, got %q, want %q", converted, expected)
+	}
+
+	now = time.Now()
+	delta = now.Add(-time.Minute * 30)
+	expected = "30 mins ago"
+	converted = ConvertToTimeElapsed(delta)
+	if expected != converted {
+		t.Errorf("Elapsed time failed, got %q, want %q", converted, expected)
+	}
+
+	now = time.Now()
+	delta = now.Add(-time.Hour * 5)
+	expected = "5 hours ago"
+	converted = ConvertToTimeElapsed(delta)
+	if expected != converted {
+		t.Errorf("Elapsed time failed, got %q, want %q", converted, expected)
+	}
+
+	now = time.Now()
+	delta = now.Add(-time.Hour * 36)
+	expected = "1 days ago"
+	converted = ConvertToTimeElapsed(delta)
+	if expected != converted {
+		t.Errorf("Elapsed time failed, got %q, want %q", converted, expected)
 	}
 
 }

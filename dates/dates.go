@@ -4,6 +4,7 @@ import (
 	"errors"
 	"regexp"
 	"strings"
+	"fmt"
 	"time"
 )
 
@@ -41,6 +42,25 @@ func ExtractShortDate(t time.Time) string {
 	formattedNewDate := strings.Join(splitNewDate, "/")
 	return formattedNewDate
 
+}
+
+func ConvertToTimeElapsed(t time.Time) string {
+	// TODO: Tidy up and handle case when its not plural
+	duration := time.Since(t)
+	elapsed := duration.Seconds()
+	if elapsed < 60 {
+		return fmt.Sprintf("%d secs ago", int(elapsed))
+	}
+	elapsed = duration.Minutes()
+	if elapsed < 60 {
+		return fmt.Sprintf("%d mins ago", int(elapsed))
+	}
+	elapsed = duration.Hours()
+	if elapsed <= 24 {
+		return fmt.Sprintf("%d hours ago", int(elapsed))
+	}
+	days := int(elapsed)/24
+	return fmt.Sprintf("%d days ago", days)
 }
 
 func AddDays(t time.Time, days int) time.Time {

@@ -3,6 +3,7 @@ package tasks
 import (
 	"fmt"
 	"time"
+	"github.com/davecremins/TaskWizard/dates"
 )
 
 type Task struct {
@@ -20,6 +21,10 @@ type Done struct {
 type Data struct {
 	Tasks     []Task `json:"tasks"`
 	Completed []Done `json:"completed"`
+}
+
+func (task *Task) FormatDate() string {
+	return dates.ConvertToTimeElapsed(task.DateCreated)
 }
 
 func (d *Data) AddNewTask(task Task) {

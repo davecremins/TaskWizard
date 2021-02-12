@@ -39,7 +39,7 @@ func Show(data *t.Data) {
 	tbl := table.New("No.", "Task", "Added")
 	tbl.WithHeaderFormatter(headerFormat).WithFirstColumnFormatter(columnFormat)
 	for i, task := range data.Tasks {
-		tbl.AddRow(i+1, task.Item, task.DateCreated)
+		tbl.AddRow(i+1, task.Item, task.FormatDate())
 	}
 	tbl.Print()
 	fmt.Println()
