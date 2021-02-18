@@ -3,7 +3,6 @@ package display
 import (
 	"bufio"
 	"fmt"
-	t "github.com/davecremins/TaskWizard/tasks"
 	"github.com/fatih/color"
 	"github.com/rodaine/table"
 	"os"
@@ -34,13 +33,18 @@ func AcceptInput(prompt string) string {
 	return text
 }
 
-func Show(data *t.Data) {
+func Present(tbl table.Table) {
 	fmt.Println()
-	tbl := table.New("No.", "Task", "Added")
-	tbl.WithHeaderFormatter(headerFormat).WithFirstColumnFormatter(columnFormat)
-	for i, task := range data.Tasks {
-		tbl.AddRow(i+1, task.Item, task.FormatDate())
-	}
 	tbl.Print()
 	fmt.Println()
+}
+
+func PrepareTable(headers ...interface{}) table.Table {
+	tbl := table.New(headers...)
+	tbl.WithHeaderFormatter(headerFormat).WithFirstColumnFormatter(columnFormat)
+	return tbl
+}
+
+func PopulateTable(tbl table.Table, rowData ...interface{}) {
+	tbl.AddRow(rowData...)
 }

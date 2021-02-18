@@ -1,8 +1,8 @@
 package actions
 
 import (
-	"flag"
 	"bufio"
+	"flag"
 	"fmt"
 	. "github.com/davecremins/TaskWizard/config"
 	"github.com/davecremins/TaskWizard/display"
@@ -58,7 +58,9 @@ func decode(file *os.File, data *t.Data) {
 
 func showTasks(config *TaskConfig) Action {
 	showTaskCmd := flag.NewFlagSet("list", flag.ExitOnError)
+	completed := showTaskCmd.Bool("completed", false, "Option to show completed tasks")
 	action := func(args []string) {
+		showTaskCmd.Parse(args[2:])
 		jsonFile, size := getDataStore(config.DataStore)
 		defer jsonFile.Close()
 		if size == 0 {
@@ -67,7 +69,11 @@ func showTasks(config *TaskConfig) Action {
 		}
 		data := new(t.Data)
 		decode(jsonFile, data)
-		display.Show(data)
+		if *completed {
+			data.ShowCompleted()
+		} else {
+			data.ShowTasks()
+		}
 	}
 	addFlagSetDefault(showTaskCmd.Usage)
 	return action
@@ -111,7 +117,7 @@ func completeTask(config *TaskConfig) Action {
 		data := new(t.Data)
 		decode(jsonFile, data)
 
-		display.Show(data)
+		data.ShowTasks()
 		fmt.Println("")
 		fmt.Println("")
 
@@ -147,7 +153,7 @@ func moveTask(config *TaskConfig) Action {
 		data := new(t.Data)
 		decode(jsonFile, data)
 
-		display.Show(data)
+		data.ShowTasks()
 		fmt.Println("")
 		fmt.Println("")
 
@@ -183,7 +189,7 @@ func mergeTasks(config *TaskConfig) Action {
 		data := new(t.Data)
 		decode(jsonFile, data)
 
-		display.Show(data)
+		data.ShowTasks()
 		fmt.Println("")
 		fmt.Println("")
 

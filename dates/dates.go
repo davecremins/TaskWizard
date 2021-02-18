@@ -2,9 +2,9 @@ package dates
 
 import (
 	"errors"
+	"fmt"
 	"regexp"
 	"strings"
-	"fmt"
 	"time"
 )
 
@@ -59,7 +59,7 @@ func ConvertToTimeElapsed(t time.Time) string {
 	if elapsed <= 24 {
 		return fmt.Sprintf("%d hours ago", int(elapsed))
 	}
-	days := int(elapsed)/24
+	days := int(elapsed) / 24
 	return fmt.Sprintf("%d days ago", days)
 }
 
