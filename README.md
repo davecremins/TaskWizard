@@ -1,5 +1,10 @@
-# ToDoManager
-Simple command line utility for tracking TODOs
+# TaskWizard
+Simple command line utility for tracking tasks & completed tasks
 
 ## Available Commands
-TBC
+- list
+- add
+- move
+- merge
+- complete
+- import
