@@ -2,6 +2,8 @@ package tasks
 
 import (
 	"fmt"
+	"github.com/davecremins/TaskWizard/dates"
+	"github.com/davecremins/TaskWizard/display"
 	"time"
 )
 
@@ -20,6 +22,29 @@ type Done struct {
 type Data struct {
 	Tasks     []Task `json:"tasks"`
 	Completed []Done `json:"completed"`
+}
+
+func (d *Data) ShowTasks() {
+	tbl := display.PrepareTable("No.", "Task", "Added")
+	for i, task := range d.Tasks {
+		display.PopulateTable(tbl, i+1, task.Item, dates.ConvertToTimeElapsed(task.DateCreated))
+	}
+	display.Present(tbl)
+}
+
+func (d *Data) ShowCompleted() {
+	tbl := display.PrepareTable("No.", "Task", "Added", "Completed", "Comment")
+	for i, task := range d.Completed {
+		display.PopulateTable(
+			tbl,
+			i+1,
+			task.Item,
+			dates.ConvertToTimeElapsed(task.DateCreated),
+			dates.ConvertToTimeElapsed(task.DateCompleted),
+			task.Comment,
+		)
+	}
+	display.Present(tbl)
 }
 
 func (d *Data) AddNewTask(task Task) {

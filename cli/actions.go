@@ -1,6 +1,7 @@
 package actions
 
 import (
+	"bufio"
 	"flag"
 	"fmt"
 	. "github.com/davecremins/TaskWizard/config"
@@ -13,8 +14,6 @@ import (
 
 	"encoding/json"
 	t "github.com/davecremins/TaskWizard/tasks"
-	"github.com/fatih/color"
-	"github.com/rodaine/table"
 )
 
 type Action func([]string)
@@ -33,117 +32,92 @@ func printDefaults() {
 	}
 }
 
-func showTasks(config *ToDoConfig) Action {
-	action := func(args []string) {
-		jsonFile, err := os.Open("data.json")
-		defer jsonFile.Close()
-		if err != nil {
-			log.Fatalf("failed opening file: %s", err)
-		}
+func getDataStore(dataStore string) (*os.File, int64) {
+	jsonFile, err := os.Open(dataStore)
+	if err != nil {
+		log.Fatalf("failed opening file: %s", err)
+	}
+	stats, _ := jsonFile.Stat()
+	size := stats.Size()
+	return jsonFile, size
+}
 
-		stats, _ := jsonFile.Stat()
-		size := stats.Size()
+func persistToDataStore(dataStore string, data *t.Data) {
+	file, _ := os.OpenFile(dataStore, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0666)
+	encoder := json.NewEncoder(file)
+	encoder.Encode(data)
+	file.Close()
+}
+
+func decode(file *os.File, data *t.Data) {
+	decoder := json.NewDecoder(file)
+	if err := decoder.Decode(data); err != nil {
+		log.Panicf("Decode issue: %s", err)
+	}
+}
+
+func showTasks(config *TaskConfig) Action {
+	showTaskCmd := flag.NewFlagSet("list", flag.ExitOnError)
+	completed := showTaskCmd.Bool("completed", false, "Option to show completed tasks")
+	action := func(args []string) {
+		showTaskCmd.Parse(args[2:])
+		jsonFile, size := getDataStore(config.DataStore)
+		defer jsonFile.Close()
 		if size == 0 {
 			log.Println("Data file is empty, no tasks to show")
 			return
 		}
-
-		decoder := json.NewDecoder(jsonFile)
-
 		data := new(t.Data)
-		if err = decoder.Decode(data); err != nil {
-			log.Panicf("Decode issue: %s", err)
+		decode(jsonFile, data)
+		if *completed {
+			data.ShowCompleted()
+		} else {
+			data.ShowTasks()
 		}
-
-		// TODO: Move this into display package
-		headerFmt := color.New(color.FgGreen, color.Underline).SprintfFunc()
-		columnFmt := color.New(color.FgYellow).SprintfFunc()
-
-		tbl := table.New("No.", "Task", "Added")
-		tbl.WithHeaderFormatter(headerFmt).WithFirstColumnFormatter(columnFmt)
-		for i, task := range data.Tasks {
-			tbl.AddRow(i+1, task.Item, task.DateCreated)
-		}
-		tbl.Print()
 	}
+	addFlagSetDefault(showTaskCmd.Usage)
 	return action
 }
 
-func newTask(config *ToDoConfig) Action {
+func newTask(config *TaskConfig) Action {
 	newTaskCmd := flag.NewFlagSet("add", flag.ExitOnError)
 	task := newTaskCmd.String("desc", "New task placeholder", "Description of new task")
 	action := func(args []string) {
-		jsonFile, err := os.Open("data.json")
+		jsonFile, size := getDataStore(config.DataStore)
 		defer jsonFile.Close()
-		if err != nil {
-			log.Fatalf("failed opening file: %s", err)
-		}
-
 		data := new(t.Data)
-
-		stats, _ := jsonFile.Stat()
-		size := stats.Size()
 		if size == 0 {
 			log.Println("Data file is empty, no decode required")
 		} else {
-			decoder := json.NewDecoder(jsonFile)
-			if err = decoder.Decode(data); err != nil {
-				log.Panicf("Decode issue: %s", err)
-			}
+			decode(jsonFile, data)
 		}
 
 		newTaskCmd.Parse(args[2:])
 		newTask := t.Task{Item: *task, DateCreated: time.Now()}
 		data.AddNewTask(newTask)
-
-		file, _ := os.OpenFile("data.json", os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0666)
-		encoder := json.NewEncoder(file)
-		encoder.Encode(data)
-		file.Close()
-
+		persistToDataStore(config.DataStore, data)
 		log.Println("New task added successfully")
-
 	}
 	addFlagSetDefault(newTaskCmd.Usage)
 	return action
 }
 
-func completeTask(config *ToDoConfig) Action {
+func completeTask(config *TaskConfig) Action {
 	completeCmd := flag.NewFlagSet("complete", flag.ExitOnError)
 	includeComment := completeCmd.Bool("comment", false, "Option to include comment for task before completion")
 	action := func(args []string) {
 		completeCmd.Parse(args[2:])
-		jsonFile, err := os.Open("data.json")
+		jsonFile, size := getDataStore(config.DataStore)
 		defer jsonFile.Close()
-		if err != nil {
-			log.Fatalf("failed opening file: %s", err)
-		}
-
-		stats, _ := jsonFile.Stat()
-		size := stats.Size()
 		if size == 0 {
 			log.Println("Data file is empty, no tasks to complete")
 			return
 		}
 
-		decoder := json.NewDecoder(jsonFile)
-
 		data := new(t.Data)
-		if err = decoder.Decode(data); err != nil {
-			log.Panicf("Decode issue: %s", err)
-		}
+		decode(jsonFile, data)
 
-		// TODO: Move this into display package
-		headerFmt := color.New(color.FgGreen, color.Underline).SprintfFunc()
-		columnFmt := color.New(color.FgYellow).SprintfFunc()
-
-		tbl := table.New("No.", "Task", "Created")
-		tbl.WithHeaderFormatter(headerFmt).WithFirstColumnFormatter(columnFmt)
-		for i, task := range data.Tasks {
-			tbl.AddRow(i+1, task.Item, task.DateCreated)
-		}
-		tbl.Print()
-
+		data.ShowTasks()
 		fmt.Println("")
 		fmt.Println("")
 
@@ -159,52 +133,27 @@ func completeTask(config *ToDoConfig) Action {
 		}
 
 		data.CompleteTask(i, comment)
-
-		file, _ := os.OpenFile("data.json", os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0666)
-		encoder := json.NewEncoder(file)
-		encoder.Encode(data)
-		file.Close()
-
+		persistToDataStore(config.DataStore, data)
 		log.Println("Task completed successfully")
 	}
 	addFlagSetDefault(completeCmd.Usage)
 	return action
 }
 
-func moveTask(config *ToDoConfig) Action {
+func moveTask(config *TaskConfig) Action {
 	moveCmd := flag.NewFlagSet("move", flag.ExitOnError)
 	action := func(args []string) {
-		jsonFile, err := os.Open("data.json")
+		jsonFile, size := getDataStore(config.DataStore)
 		defer jsonFile.Close()
-		if err != nil {
-			log.Fatalf("failed opening file: %s", err)
-		}
-
-		stats, _ := jsonFile.Stat()
-		size := stats.Size()
 		if size == 0 {
 			log.Println("Data file is empty, no tasks to move")
 			return
 		}
 
-		decoder := json.NewDecoder(jsonFile)
-
 		data := new(t.Data)
-		if err = decoder.Decode(data); err != nil {
-			log.Panicf("Decode issue: %s", err)
-		}
+		decode(jsonFile, data)
 
-		// TODO: Move this into display package
-		headerFmt := color.New(color.FgGreen, color.Underline).SprintfFunc()
-		columnFmt := color.New(color.FgYellow).SprintfFunc()
-
-		tbl := table.New("No.", "Task", "Created")
-		tbl.WithHeaderFormatter(headerFmt).WithFirstColumnFormatter(columnFmt)
-		for i, task := range data.Tasks {
-			tbl.AddRow(i+1, task.Item, task.DateCreated)
-		}
-		tbl.Print()
-
+		data.ShowTasks()
 		fmt.Println("")
 		fmt.Println("")
 
@@ -220,54 +169,27 @@ func moveTask(config *ToDoConfig) Action {
 		}
 
 		data.MoveTask(taskNum, newPosition)
-
-		file, _ := os.OpenFile("data.json", os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0666)
-		encoder := json.NewEncoder(file)
-		encoder.Encode(data)
-		file.Close()
-
+		persistToDataStore(config.DataStore, data)
 		log.Println("Task moved successfully")
 	}
 	addFlagSetDefault(moveCmd.Usage)
 	return action
-
 }
 
-func mergeTasks(config *ToDoConfig) Action {
+func mergeTasks(config *TaskConfig) Action {
 	mergeCmd := flag.NewFlagSet("merge", flag.ExitOnError)
 	action := func(args []string) {
-
-		jsonFile, err := os.Open("data.json")
+		jsonFile, size := getDataStore(config.DataStore)
 		defer jsonFile.Close()
-		if err != nil {
-			log.Fatalf("failed opening file: %s", err)
-		}
-
-		stats, _ := jsonFile.Stat()
-		size := stats.Size()
 		if size == 0 {
 			log.Println("Data file is empty, no tasks to merge")
 			return
 		}
 
-		decoder := json.NewDecoder(jsonFile)
-
 		data := new(t.Data)
-		if err = decoder.Decode(data); err != nil {
-			log.Panicf("Decode issue: %s", err)
-		}
+		decode(jsonFile, data)
 
-		// TODO: Move this into display package
-		headerFmt := color.New(color.FgGreen, color.Underline).SprintfFunc()
-		columnFmt := color.New(color.FgYellow).SprintfFunc()
-
-		tbl := table.New("No.", "Task", "Created")
-		tbl.WithHeaderFormatter(headerFmt).WithFirstColumnFormatter(columnFmt)
-		for i, task := range data.Tasks {
-			tbl.AddRow(i+1, task.Item, task.DateCreated)
-		}
-		tbl.Print()
-
+		data.ShowTasks()
 		fmt.Println("")
 		fmt.Println("")
 
@@ -283,14 +205,48 @@ func mergeTasks(config *ToDoConfig) Action {
 		}
 
 		data.MergeTasks(item, mergeWith)
-		file, _ := os.OpenFile("data.json", os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0666)
-		encoder := json.NewEncoder(file)
-		encoder.Encode(data)
-		file.Close()
-
+		persistToDataStore(config.DataStore, data)
 		log.Println("Task merged successfully")
 	}
 	addFlagSetDefault(mergeCmd.Usage)
 	return action
+}
 
+func importTasks(config *TaskConfig) Action {
+	importCmd := flag.NewFlagSet("import", flag.ExitOnError)
+	importFilePath := importCmd.String("file", "", "Path to file containing tasks to import")
+	action := func(args []string) {
+		importCmd.Parse(args[2:])
+		if *importFilePath == "" {
+			log.Fatal("Import action needs a path to the file containing tasks")
+		}
+		jsonFile, size := getDataStore(config.DataStore)
+		defer jsonFile.Close()
+		data := new(t.Data)
+		if size != 0 {
+			decode(jsonFile, data)
+		}
+
+		file, err := os.Open(*importFilePath)
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer file.Close()
+
+		imported := 0
+		scanner := bufio.NewScanner(file)
+		for scanner.Scan() {
+			data.AddNewTask(t.Task{Item: scanner.Text(), DateCreated: time.Now()})
+			imported++
+		}
+
+		if err := scanner.Err(); err != nil {
+			log.Fatal(err)
+		}
+		persistToDataStore(config.DataStore, data)
+		msg := fmt.Sprintf("%d tasks imported successfully", imported)
+		log.Println(msg)
+	}
+	addFlagSetDefault(importCmd.Usage)
+	return action
 }
